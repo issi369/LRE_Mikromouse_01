@@ -69,6 +69,10 @@ uint16_t sp;
 uint16_t od;
 uint16_t od_buf;
 
+//move distance command trigger
+uint8_t set_dis_trig; 
+uint16_t dis_val;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

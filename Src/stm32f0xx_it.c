@@ -229,8 +229,7 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 1 */
   lre_stepper_setStep(i);
   i++;
-  //ds = 100;
-  j = ds/0.061;
+  j = dis_val/0.061;
   n++;
   od = n*0.061;
 

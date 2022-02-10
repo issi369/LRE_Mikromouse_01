@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "main.h": "c"
+        "main.h": "c",
+        "*.tcc": "c",
+        "type_traits": "c",
+        "limits": "c"
     }
 }
