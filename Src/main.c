@@ -77,28 +77,27 @@ static void MX_NVIC_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-//uint8_t *Distance;
-//uint8_t Dis = 0;
-
-//#define TRIG_PIN GPIO_PIN_9
-//#define TRIG_PORT GPIOC
+//init UART module
 uint8_t UART1_rxBuffer[12] = {0};
 uint8_t Buffer[64] = {0};
 uint8_t Text[12] = {0};
 uint8_t length;
+
+//init buffer for UART transmit of US-Sensor
 uint8_t distance_str_front[200];
 uint8_t len_front = 0;
-uint8_t distance_str_US2[200];
-uint8_t len_US2 = 0;
-uint8_t distance_str_US3[200];
-uint8_t len_US3 = 0;
+uint8_t distance_str_left[200];
+uint8_t len_left = 0;
+uint8_t distance_str_right[200];
+uint8_t len_right = 0;
 
+//PLEASE ADD DESCRIPTION
 uint8_t distance_str_od[200];
 uint8_t len_od = 0;
 
 int x;
 int y;
+
 // Let's write the callback function
 void delay (uint16_t time)
 {
@@ -106,26 +105,23 @@ void delay (uint16_t time)
 	while (__HAL_TIM_GET_COUNTER(&htim1) < time);  // wait for the counter to reach the us input in the parameter
 }
 
-void trig_US1 ()
+void trig_front ()
 {
-  //echo_duration_US1 = 0;
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 }
 
-void trig_US2 ()
+void trig_left ()
 {
-  //echo_duration_US1 = 0;
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-  
 }
 
-void trig_US3 ()
+void trig_right ()
 {
-  //echo_duration_US1 = 0;
+  //echo_duration_front = 0;
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
@@ -169,14 +165,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
   if (strcmp (Buffer, "tm ds\r\n") == 0)
   {
-    len_front = sprintf(distance_str_front, "Distance US1 is: %02d \r\n", dist_calc(echo_duration_US1));
+    len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
     HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
 
-    len_US2 = sprintf(distance_str_US2, "Distance US2 is: %02d \r\n", dist_calc(echo_duration_US2));
-    HAL_UART_Transmit(&huart1, distance_str_US2, len_US2, 100); 
+    len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
+    HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
 
-    len_US3 = sprintf(distance_str_US3, "Distance US3 is: %02d \r\n", dist_calc(echo_duration_US3));
-    HAL_UART_Transmit(&huart1, distance_str_US3, len_US3, 100); 
+    len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n", dist_calc(echo_duration_right));
+    HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); 
 
 
     //  Vertical line
@@ -276,23 +272,23 @@ int main(void)
 
   __HAL_TIM_SET_PRESCALER(&htim1, SystemCoreClock/1e6-1);
   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
-  echo_duration_US1 = 0;
-  echo_trig_US1 = 0; 
+  echo_duration_front = 0;
+  echo_trig_front = 0; 
 
-  echo_duration_US2 = 0;
-  echo_trig_US2 = 0; 
+  echo_duration_left = 0;
+  echo_trig_left = 0; 
 
-  echo_duration_US3 = 0;
-  echo_trig_US3 = 0; 
+  echo_duration_right = 0;
+  echo_trig_right = 0; 
 
-  t_0 = 0;
-  t_1 = 0;
+  t_0_front = 0;
+  t_1_front = 0;
 
-  t_0_US2 = 0;
-  t_1_US2 = 0;
+  t_0_left = 0;
+  t_1_left = 0;
 
-  t_0_US3 = 0;
-  t_1_US3 = 0;
+  t_0_right = 0;
+  t_1_right = 0;
 
   US_Select = 0;
 
@@ -318,40 +314,28 @@ int main(void)
     uint8_t distance_str_front[200];
     uint8_t len_front = 0;
 
-    trig_US1();
-    //len_front = sprintf(distance_str_front, "Distance US1 is: %02d \r\n", dist_calc(echo_duration_US1));
-    //HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
+    trig_front();
     HAL_Delay(200);
 
     US_Select = 1;
 
     //  US 2 
-    uint8_t distance_str_US2[200];
-    uint8_t len_US2 = 0;
+    uint8_t distance_str_left[200];
+    uint8_t len_left = 0;
 
-    trig_US2();
-    //len_US2 = sprintf(distance_str_US2, "Distance US2 is: %02d \r\n", dist_calc(echo_duration_US2));
-    //HAL_UART_Transmit(&huart1, distance_str_US2, len_US2, 100); 
+    trig_left();
     HAL_Delay(200);
 
     US_Select = 2;
 
     //  US 3 
-    uint8_t distance_str_US3[200];
-    uint8_t len_US3 = 0;
+    uint8_t distance_str_right[200];
+    uint8_t len_right = 0;
 
-    trig_US3();
-    //len_US3 = sprintf(distance_str_US3, "Distance US3 is: %02d \r\n", dist_calc(echo_duration_US3));
-    //HAL_UART_Transmit(&huart1, distance_str_US3, len_US3, 100); 
+    trig_right();
     HAL_Delay(200);
 
     US_Select = 0;
-
-    //  Vertical line
-    //uint8_t* message2 = "-------------------\r\n";
-    //HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-
-    //HAL_Delay(600);
 
   }
   /* USER CODE END 3 */

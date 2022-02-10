@@ -37,23 +37,28 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-uint16_t echo_duration_US1;
-uint8_t echo_trig_US1;
-uint16_t t_0;
-uint16_t t_1;
+//define front US-Sensor corr. to US1
+uint16_t echo_duration_front;
+uint8_t echo_trig_front;
+uint16_t t_0_front;
+uint16_t t_1_front;
 
-uint16_t echo_duration_US2;
-uint8_t echo_trig_US2;
-uint16_t t_0_US2;
-uint16_t t_1_US2;
+//define left US-Sensor corr. to US2
+uint16_t echo_duration_left;
+uint8_t echo_trig_left;
+uint16_t t_0_left;
+uint16_t t_1_left;
 
-uint16_t echo_duration_US3;
-uint8_t echo_trig_US3;
-uint16_t t_0_US3;
-uint16_t t_1_US3;
+//define right US-Sensor corr. to US3
+uint16_t echo_duration_right;
+uint8_t echo_trig_right;
+uint16_t t_0_right;
+uint16_t t_1_right;
 
+//define US selector [0,1,2]
 uint8_t US_Select;
 
+//PLEASE ADD DESCIPTION
 uint8_t i;
 uint16_t n;
 uint16_t ds;
@@ -63,7 +68,7 @@ uint16_t sp;
 
 uint16_t od;
 uint16_t od_buf;
-//uint8_t US23_switch;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

@@ -151,45 +151,45 @@ void EXTI4_15_IRQHandler(void)
   /* USER CODE BEGIN EXTI4_15_IRQn 0 */
   switch (US_Select){
 
-    case 0: 
-      if (echo_trig_US1 == 0)
+    case 0:  //Front US sensor
+      if (echo_trig_front == 0)
         {
-          echo_trig_US1 = 1;
-          t_0 = __HAL_TIM_GET_COUNTER(&htim1);
+          echo_trig_front = 1;
+          t_0_front = __HAL_TIM_GET_COUNTER(&htim1);
         }
-      else if (echo_trig_US1 == 1)
+      else if (echo_trig_front == 1)
         {
-          echo_trig_US1 = 0;
-          t_1 = __HAL_TIM_GET_COUNTER(&htim1);
-          echo_duration_US1 = t_1 - t_0;
-        }
-      break;
-
-    case 1:
-      if (echo_trig_US2 == 0)
-        {
-          echo_trig_US2 = 1;
-          t_0_US2 = __HAL_TIM_GET_COUNTER(&htim1);
-        }
-      else if (echo_trig_US2 == 1)
-        {
-          echo_trig_US2 = 0;
-          t_1_US2 = __HAL_TIM_GET_COUNTER(&htim1);
-          echo_duration_US2 = t_1_US2 - t_0_US2;
+          echo_trig_front = 0;
+          t_1_front = __HAL_TIM_GET_COUNTER(&htim1);
+          echo_duration_front = t_1_front - t_0_front;
         }
       break;
 
-    case 2:
-      if (echo_trig_US3 == 0)
+    case 1:  //Left US sensor
+      if (echo_trig_left == 0)
         {
-          echo_trig_US3 = 1;
-          t_0_US3 = __HAL_TIM_GET_COUNTER(&htim1);
+          echo_trig_left = 1;
+          t_0_left = __HAL_TIM_GET_COUNTER(&htim1);
         }
-      else if (echo_trig_US3 == 1)
+      else if (echo_trig_left == 1)
         {
-          echo_trig_US3 = 0;
-          t_1_US3 = __HAL_TIM_GET_COUNTER(&htim1);
-          echo_duration_US3 = t_1_US3 - t_0_US3;
+          echo_trig_left = 0;
+          t_1_left = __HAL_TIM_GET_COUNTER(&htim1);
+          echo_duration_left = t_1_left - t_0_left;
+        }
+      break;
+
+    case 2:  //Right US sensor
+      if (echo_trig_right == 0)
+        {
+          echo_trig_right = 1;
+          t_0_right = __HAL_TIM_GET_COUNTER(&htim1);
+        }
+      else if (echo_trig_right == 1)
+        {
+          echo_trig_right = 0;
+          t_1_right = __HAL_TIM_GET_COUNTER(&htim1);
+          echo_duration_right = t_1_right - t_0_right;
         }
       break;
   }
