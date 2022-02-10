@@ -151,10 +151,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     strcat (Buffer, UART1_rxBuffer);
   }
 
+//give out total driven distance
   if (strcmp (Buffer, "tm od\r\n") == 0)
   {
-    //HAL_UART_Transmit(&huart1, Buffer, strlen(Buffer), 100);
-    len_od = sprintf(distance_str_od, "traveled distance pi-pa-po: %02d \r\n", od+od_buf);
+    len_od = sprintf(distance_str_od, "traveled distance approx.: %02d \r\n", od+od_buf);
     HAL_UART_Transmit(&huart1, distance_str_od, len_od, 100); 
 
     if (x > 5)
@@ -163,6 +163,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
   }
 
+//give out current distance in all three directions
   if (strcmp (Buffer, "tm ds\r\n") == 0)
   {
     len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
@@ -175,7 +176,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); 
 
 
-    //  Vertical line
+  //  Draw vertical line
     uint8_t* message2 = "-------------------\r\n";
     HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
 
@@ -185,6 +186,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
   }
 
+//command straight movement with fixed driving-distance
   if (strncmp (Buffer, "mv ds", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
@@ -204,6 +206,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
   }
 
+//command change in motor-speed (for both motors)
   if (strncmp (Buffer, "mv sp", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
@@ -234,14 +237,12 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
-
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -255,23 +256,15 @@ int main(void)
   MX_USB_PCD_Init();
   MX_TIM1_Init();
   MX_TIM3_Init();
-
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  //int x = 0;
 
-  /*
-  sp = 31.25;
-  p = 62500/sp;
-  i = 0;
-  __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1);
-  __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
-  HAL_TIM_Base_Start_IT(&htim3);
-  */
-
-  __HAL_TIM_SET_PRESCALER(&htim1, SystemCoreClock/1e6-1);
+//define properties of trigger timer (TIM_1)
+   __HAL_TIM_SET_PRESCALER(&htim1, SystemCoreClock/1e6-1);
   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+
+//initialize sensors
   echo_duration_front = 0;
   echo_trig_front = 0; 
 
@@ -292,6 +285,8 @@ int main(void)
 
   US_Select = 0;
 
+
+//ADD COMMENT
   od_buf = 0;
   od = 0;
 
@@ -305,11 +300,15 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  
+//Currently the main code triggers every US-Sensor every 400ms -> distance data can be obtained continiously
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
     //  US 1
     uint8_t distance_str_front[200];
     uint8_t len_front = 0;
