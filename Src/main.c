@@ -205,20 +205,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
     return;
   }
-
-  //memset(Buffer, 0, strlen(Buffer));
-
 }
 
 //void fnct to drive straight for a given distance
-void mv_straight (uint16_t ds)
+void mv_straight (uint16_t ds, uint8_t reverse)
   {
+    mv_direction = reverse; //set driving direction
 
-    forward = 0;//prel. choose direction
+    current_dis = 0; //reset currently driven distance
+    target_dis = dis_val/0.061; //set target distance
 
-    current_dis = 0;
-    target_dis = dis_val/0.061;
-    p = 62500/sp;
+    p = 62500/sp; //update speed
 
     __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1);
     __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
@@ -227,12 +224,6 @@ void mv_straight (uint16_t ds)
     dis_val = ds; //Solution for Bug: VS code tends to optimize ds which ends up deleting its content
     length = sprintf(Buffer, "My predicted distance in mm is: %d\r\n", ds);
     HAL_UART_Transmit(&huart1, Buffer, length, 100);
-   
-   //delete buffer
-    if (x > 8)
-      {
-        memset(Buffer, 0, strlen(Buffer));
-      }
   }
 /* USER CODE END 0 */
 
@@ -305,12 +296,18 @@ int main(void)
 //set default speed
   sp = 30;
 
-//set default move direction (0-reverse, 1-straight)
-  forward = 1;
+//set default move direction for both wheels (1-reverse, 0-foreward)
   i = 0;
+
+  //choose both wheels as default
+  rotation = 1570; //corresponds to 90° turn
+
 //ADD COMMENT
   od_buf = 0;
   od = 0;
+
+  //Temporary
+  uint16_t val;
 
   HAL_Init();
   SystemClock_Config();
@@ -333,9 +330,18 @@ int main(void)
     if (set_dis_trig == 1)
     {
       dis_val = atoi(Text); //read out buffer info
-      mv_straight(dis_val); //call move function
+      mv_straight(dis_val, 2); //call move function
       set_dis_trig = 0; //reset move command trigger
     }
+    /*
+    val = 20;
+    mv_turn(1, val);
+    p = 62500/sp; //update speed
+
+    __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1);
+    __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
+    HAL_TIM_Base_Start_IT(&htim3);
+*/
 
     //  US 1
     uint8_t distance_str_front[200];
