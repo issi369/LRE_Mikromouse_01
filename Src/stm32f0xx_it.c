@@ -227,23 +227,60 @@ void TIM3_IRQHandler(void)
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
-  lre_stepper_setStep(i);
-  i++;
-  j = dis_val/0.061;
-  n++;
-  od = n*0.061;
 
-  if (n > j){
-    //i = 0;
-    HAL_TIM_Base_Stop_IT(&htim3);
-    od_buf = od_buf + od;
-    od = 0;
-    n = 0;
-  } 
+//foreward driving
+  if (forward == 1)
+  {   
+    //iterrate through stepper function
+    lre_stepper_setStep(i); 
+    i++;
+    current_dis++; //current tick
+    od = current_dis*0.061; //current distance
 
-  if (i > 7){
-    i = 0;
+    if (i > 7) //reset stepper iterrator after 8 steps
+    {
+      i = 0;
+    } 
+    
+    if (current_dis > target_dis)//
+    {
+      //stop timer
+      HAL_TIM_Base_Stop_IT(&htim3);
+      //add new distance to already driven distance
+      od_buf = od_buf + od;
+      //reset current driven distance
+      od = 0;
+      return;
+    }
+
   }
+  
+//backward driving
+  else if (forward == 0)
+  {
+    //iterrate through stepper function
+    lre_stepper_setStep(i);
+    current_dis++; //current tic
+    od = current_dis*0.061; //current distance
+    if (i == 0) //reset stepper iterrator after 8 steps
+    {
+      i = 8;
+    } 
+
+    i--;
+
+    if (current_dis > target_dis)//
+    {
+      //stop timer
+      HAL_TIM_Base_Stop_IT(&htim3);
+      //add new distance to already driven distance
+      od_buf = od_buf + od;
+      //reset current driven distance
+      od = 0;
+      return;
+    }
+  }
+  
   /* USER CODE END TIM3_IRQn 1 */
 }
 

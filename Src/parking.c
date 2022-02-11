@@ -12,3 +12,21 @@
 - Stop
 
 */
+
+void parking ()
+{
+    //  US 1
+    US_Select = 0;
+    uint8_t distance_str_front[200];
+    uint8_t len_front = 0;
+
+    trig_front();
+    HAL_Delay(200);
+
+    US_Select = 1;
+}
+
+void turn_left ()
+{
+
+}

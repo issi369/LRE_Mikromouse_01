@@ -161,10 +161,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     {
       memset(Buffer, 0, strlen(Buffer));
     }
+    return;
   }
 
 //give out current distance in all three directions
-  if (strcmp (Buffer, "tm ds\r\n") == 0)
+  else if (strcmp (Buffer, "tm ds\r\n") == 0)
   {
     len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
     HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
@@ -179,22 +180,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   //  Draw vertical line
     uint8_t* message2 = "-------------------\r\n";
     HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-
-    if (x > 5)
-    {
-      memset(Buffer, 0, strlen(Buffer));
-    }
+    return;
   }
 
 //command straight movement with fixed driving-distance
-  if (strncmp (Buffer, "mv ds", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
+  else if (strncmp (Buffer, "mv ds", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
     set_dis_trig = 1;
+    return;
   }
 
 //command change in motor-speed (for both motors)
-  if (strncmp (Buffer, "mv sp", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
+  else if (strncmp (Buffer, "mv sp", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
     sp = atoi(Text);
@@ -205,21 +203,30 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     {
       memset(Buffer, 0, strlen(Buffer));
     }
+    return;
   }
+
+  //memset(Buffer, 0, strlen(Buffer));
+
 }
 
 //void fnct to drive straight for a given distance
 void mv_straight (uint16_t ds)
   {
-    dis_val = ds; //Solution for Bug: VS code tends to optimize ds which ends up deleting its content
-    length = sprintf(Buffer, "My predicted distance in mm is: %d\r\n", ds);
-    HAL_UART_Transmit(&huart1, Buffer, length, 100);
-    
+
+    forward = 0;//prel. choose direction
+
+    current_dis = 0;
+    target_dis = dis_val/0.061;
     p = 62500/sp;
-    i = 0;
+
     __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1);
     __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
     HAL_TIM_Base_Start_IT(&htim3);
+
+    dis_val = ds; //Solution for Bug: VS code tends to optimize ds which ends up deleting its content
+    length = sprintf(Buffer, "My predicted distance in mm is: %d\r\n", ds);
+    HAL_UART_Transmit(&huart1, Buffer, length, 100);
    
    //delete buffer
     if (x > 8)
@@ -298,6 +305,9 @@ int main(void)
 //set default speed
   sp = 30;
 
+//set default move direction (0-reverse, 1-straight)
+  forward = 1;
+  i = 0;
 //ADD COMMENT
   od_buf = 0;
   od = 0;
@@ -354,6 +364,7 @@ int main(void)
 
     US_Select = 0;
 
+    memset(Buffer, 0, strlen(Buffer)); //reset buffer
   }
   /* USER CODE END 3 */
 }

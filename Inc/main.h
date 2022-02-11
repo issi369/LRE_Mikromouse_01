@@ -60,9 +60,9 @@ uint8_t US_Select;
 
 //PLEASE ADD DESCIPTION
 uint8_t i;
-uint16_t n;
+uint16_t current_dis;
 uint16_t ds;
-uint16_t j;
+uint16_t target_dis;
 uint16_t p;
 uint16_t sp;
 
@@ -72,6 +72,9 @@ uint16_t od_buf;
 //move distance command trigger
 uint8_t set_dis_trig; 
 uint16_t dis_val;
+
+//move direction
+uint8_t forward;
 
 /* USER CODE END ET */
 
