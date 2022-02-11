@@ -74,7 +74,13 @@ uint8_t set_dis_trig;
 uint16_t dis_val;
 
 //move direction
-uint8_t forward;
+//uint8_t reverse;
+uint8_t mv_direction;
+
+uint8_t r; //lre_stepper iterrator for right motor when turning
+uint8_t l; //lre_stepper iterrator for left motor when turning
+uint16_t rotation; //select rotation distance in []
+uint16_t cur_rotation; //current rotation distance in []
 
 /* USER CODE END ET */
 

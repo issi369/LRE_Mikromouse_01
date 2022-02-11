@@ -3,6 +3,7 @@
         "main.h": "c",
         "*.tcc": "c",
         "type_traits": "c",
-        "limits": "c"
+        "limits": "c",
+        "stm32f0xx_hal.h": "c"
     }
 }

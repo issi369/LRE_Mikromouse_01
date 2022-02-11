@@ -228,11 +228,178 @@ void TIM3_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
 
+  if (mv_direction == 0)
+    {
+        //iterrate through stepper function
+      lre_stepper_setStep(i, 1, 1); 
+      i++;
+      current_dis++; //current tick
+      od = current_dis*0.061; //current distance
+
+      if (i > 7) //reset stepper iterrator after 8 steps
+        {
+          i = 0;
+        } 
+      
+      if (current_dis > target_dis)//
+        {
+          //stop timer
+          HAL_TIM_Base_Stop_IT(&htim3);
+          //add new distance to already driven distance
+          od_buf = od_buf + od;
+          //reset current driven distance
+          od = 0;
+          return;
+        }
+    }
+
+  else if (mv_direction == 1)
+    {
+      //iterrate through stepper function
+      lre_stepper_setStep(i, 1, 1);
+      current_dis++; //current tic
+      od = current_dis*0.061; //current distance
+      if (i == 0) //reset stepper iterrator after 8 steps
+        {
+          i = 8;
+        } 
+
+      i--;
+
+      if (current_dis > target_dis)//
+        {
+          //stop timer
+          HAL_TIM_Base_Stop_IT(&htim3);
+          //add new distance to already driven distance
+          od_buf = od_buf + od;
+          //reset current driven distance
+          od = 0;
+          return;
+        }
+    }
+
+  else if (mv_direction == 2)
+    {
+      lre_stepper_setStep(l, 1, 0); //trigger left motor to turn cc-wise
+      lre_stepper_setStep(r, 0, 1); //trigger right motor to turn c-wise
+
+      r++;
+      if (l == 0) //reset stepper iterrator after 8 steps
+        {
+          l = 8;
+        } 
+      
+      if (r > 7) //reset stepper iterrator after 8 steps
+        {
+          r = 0;
+        } 
+      l--;
+      cur_rotation++;
+
+      if (cur_rotation > rotation)//
+        {
+          //stop timer
+          HAL_TIM_Base_Stop_IT(&htim3);
+          //add new distance to already driven distance
+          //od_buf = od_buf + od;
+          //reset current driven distance
+          cur_rotation = 0;
+          return;
+        }
+
+    else
+      {
+        return;
+      }
+    }
+/*
+  switch (mv_direction)
+  {
+    case 0: //foreward
+       //iterrate through stepper function
+      lre_stepper_setStep(i, 1, 1); 
+      i++;
+      current_dis++; //current tick
+      od = current_dis*0.061; //current distance
+
+      if (i > 7) //reset stepper iterrator after 8 steps
+        {
+          i = 0;
+        } 
+      
+      if (current_dis > target_dis)//
+        {
+          //stop timer
+          HAL_TIM_Base_Stop_IT(&htim3);
+          //add new distance to already driven distance
+          od_buf = od_buf + od;
+          //reset current driven distance
+          od = 0;
+          break;
+        }
+
+    case 1: //reverse
+      //iterrate through stepper function
+      lre_stepper_setStep(i, 1, 1);
+      current_dis++; //current tic
+      od = current_dis*0.061; //current distance
+      if (i == 0) //reset stepper iterrator after 8 steps
+        {
+          i = 8;
+        } 
+
+      i--;
+
+      if (current_dis > target_dis)//
+        {
+          //stop timer
+          HAL_TIM_Base_Stop_IT(&htim3);
+          //add new distance to already driven distance
+          od_buf = od_buf + od;
+          //reset current driven distance
+          od = 0;
+          break;
+        }
+    
+    case 2: //left turn
+
+      lre_stepper_setStep(l, 1, 0); //trigger left motor to turn cc-wise
+      lre_stepper_setStep(r, 0, 1); //trigger right motor to turn c-wise
+
+      r++;
+      if (l == 0) //reset stepper iterrator after 8 steps
+        {
+          i = 8;
+        } 
+      
+      if (r > 7) //reset stepper iterrator after 8 steps
+        {
+          i = 8;
+        } 
+      l--;
+      cur_rotation++;
+
+      if (cur_rotation > rotation)//
+        {
+          //stop timer
+          HAL_TIM_Base_Stop_IT(&htim3);
+          //add new distance to already driven distance
+          //od_buf = od_buf + od;
+          //reset current driven distance
+          //od = 0;
+          break;
+        }
+
+    default:
+      break;
+
+  }*/
+  /*
 //foreward driving
   if (forward == 1)
   {   
     //iterrate through stepper function
-    lre_stepper_setStep(i); 
+    lre_stepper_setStep(i, right, left); 
     i++;
     current_dis++; //current tick
     od = current_dis*0.061; //current distance
@@ -259,7 +426,7 @@ void TIM3_IRQHandler(void)
   else if (forward == 0)
   {
     //iterrate through stepper function
-    lre_stepper_setStep(i);
+    lre_stepper_setStep(i, right, left);
     current_dis++; //current tic
     od = current_dis*0.061; //current distance
     if (i == 0) //reset stepper iterrator after 8 steps
@@ -279,7 +446,7 @@ void TIM3_IRQHandler(void)
       od = 0;
       return;
     }
-  }
+  }*/
   
   /* USER CODE END TIM3_IRQn 1 */
 }

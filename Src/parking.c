@@ -2,6 +2,12 @@
 //imports
 #include "main.h"
 #include "stm32f0xx_it.h"
+#include "parking.h"
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
+//#include "main.h"
 
 /*general approach:
 
@@ -13,7 +19,7 @@
 
 */
 
-void parking ()
+void parking (void)
 {
     //  US 1
     US_Select = 0;
@@ -26,7 +32,21 @@ void parking ()
     US_Select = 1;
 }
 
-void turn_left ()
+void mv_turn (int left_turn, uint16_t rot)
 {
+    if (left_turn == 1)
+        {
+            l = 0;
+            r = 0;
+            rotation = rot;
+            //mv_direction = 2;
 
+        }
+
+    else if (left_turn == 0)
+        {
+            l = 0;
+            r = 0;
+            //mv_direction = 3; //right turn
+        }
 }
