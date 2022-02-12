@@ -154,32 +154,33 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 //give out total driven distance
   if (strcmp (Buffer, "tm od\r\n") == 0)
   {
-    len_od = sprintf(distance_str_od, "traveled distance approx.: %02d \r\n", od+od_buf);
-    HAL_UART_Transmit(&huart1, distance_str_od, len_od, 100); 
+    /*len_od = sprintf(distance_str_od, "traveled distance approx.: %02d \r\n", od+od_buf);
+    HAL_UART_Transmit(&huart1, distance_str_od, len_od, 100); */
 
-    if (x > 5)
-    {
-      memset(Buffer, 0, strlen(Buffer));
-    }
+    tmod_trig = 1;
+
+    //memset(Buffer, 0, strlen(Buffer));
+
     return;
   }
 
 //give out current distance in all three directions
   else if (strcmp (Buffer, "tm ds\r\n") == 0)
   {
-    len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
+    /*len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
     HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
 
     len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
     HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
 
     len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n", dist_calc(echo_duration_right));
-    HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); 
-
+    HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); */
+    
+    tmds_trig = 1;
 
   //  Draw vertical line
-    uint8_t* message2 = "-------------------\r\n";
-    HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+    /*uint8_t* message2 = "-------------------\r\n";
+    HAL_UART_Transmit(&huart1, message2, strlen(message2),100);*/
     return;
   }
 
@@ -195,14 +196,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   else if (strncmp (Buffer, "mv sp", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
-    sp = atoi(Text);
+    set_sp_trig = 1;
+    /*sp = atoi(Text);
     length = sprintf(Buffer, "My predicted speed in mm/s is: %d\r\n", sp);
-    HAL_UART_Transmit(&huart1, Buffer, length, 100);
+    HAL_UART_Transmit(&huart1, Buffer, length, 100);*/
 
-    if (x > 8)
-    {
-      memset(Buffer, 0, strlen(Buffer));
-    }
+    //memset(Buffer, 0, strlen(Buffer));
+
     return;
   }
 }
@@ -293,6 +293,12 @@ int main(void)
   set_dis_trig = 0;
   dis_val = 0;
 
+//init send tm ds distance trigger
+  tmds_trig = 0;
+
+//init send tm od distance trigger
+  tmod_trig = 0;
+
 //set default speed
   sp = 30;
 
@@ -332,6 +338,41 @@ int main(void)
       dis_val = atoi(Text); //read out buffer info
       mv_straight(dis_val, 2); //call move function
       set_dis_trig = 0; //reset move command trigger
+    }
+
+    else if (tmds_trig == 1)
+    {
+      len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
+      HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
+
+      len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
+      HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
+
+      len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n", dist_calc(echo_duration_right));
+      HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); 
+
+      //  Draw vertical line
+      uint8_t* message2 = "-------------------\r\n";
+      HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+
+      tmds_trig = 0; //reset tmds command trigger
+    }
+
+    else if (tmod_trig == 1)
+    {
+      len_od = sprintf(distance_str_od, "traveled distance approx.: %02d \r\n", od+od_buf);
+      HAL_UART_Transmit(&huart1, distance_str_od, len_od, 100); 
+      tmod_trig = 0; //reset tmod command trigger
+      memset(Buffer, 0, strlen(Buffer)); //clear buffer
+    }
+
+    else if (set_sp_trig == 1)
+    {
+      sp = atoi(Text);
+      length = sprintf(Buffer, "My predicted speed in mm/s is: %d\r\n", sp);
+      HAL_UART_Transmit(&huart1, Buffer, length, 100);
+      set_sp_trig = 0; //reset speed command trigger
+      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
     /*
     val = 20;

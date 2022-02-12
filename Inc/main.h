@@ -69,9 +69,18 @@ uint16_t sp;
 uint16_t od;
 uint16_t od_buf;
 
+// send tm ds distance command trigger
+uint8_t tmds_trig;
+
+// send tm od distance command trigger
+uint8_t tmod_trig;
+
 //move distance command trigger
 uint8_t set_dis_trig; 
 uint16_t dis_val;
+
+// move speed command trigger
+uint8_t set_sp_trig;
 
 //move direction
 //uint8_t reverse;
