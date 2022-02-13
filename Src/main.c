@@ -297,7 +297,7 @@ int main(void)
   tmod_trig = 0;
 
 //set default speed
-  sp = 30;
+  sp = 40;
 
 //set default move direction for both wheels (1-reverse, 0-foreward)
   i = 0;
