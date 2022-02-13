@@ -103,6 +103,9 @@ uint16_t dis_val;
 //move speed command trigger
 uint8_t set_sp_trig;
 
+//move follow wall trigger
+uint8_t set_wa_trig;
+
 //move direction
 uint8_t mv_direction;
 

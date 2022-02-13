@@ -91,6 +91,10 @@ uint8_t len_left = 0;
 uint8_t distance_str_right[200];
 uint8_t len_right = 0;
 
+//init buffer for follow wall initial distances
+uint8_t wall_len_left = 0;
+uint8_t wall_len_right = 0;
+
 //PLEASE ADD DESCRIPTION
 uint8_t distance_str_od[200];
 uint8_t len_od = 0;
@@ -468,6 +472,70 @@ int main(void)
       HAL_UART_Transmit(&huart1, Buffer, length, 100);
       set_sp_trig = 0; //reset speed command trigger
       memset(Buffer, 0, strlen(Buffer)); //clear buffer
+    }
+
+    //Follow wall function
+    else if (set_wa_trig == 1)
+    {
+      //len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
+      //HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
+
+      //len_front = dist_calc(echo_duration_front);
+      
+      //len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
+      //HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
+
+      wall_len_left = dist_calc(echo_duration_left);
+      len_left = dist_calc(echo_duration_left);
+      
+      //len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n", dist_calc(echo_duration_right));
+      //HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); 
+
+      wall_len_right = dist_calc(echo_duration_right);
+      len_right = dist_calc(echo_duration_right);
+      //  Draw vertical line
+      //uint8_t* message2 = "-------------------\r\n";
+      //HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+
+      // Set distance 2 meters
+      dis_val = 2000;
+
+      //  Move along wall function which enbales the mv_straight until deviation is detected or od > dist_val
+      while (dis_val > od)
+      {
+
+        while (wall_len_left - 30 < len_left < wall_len_left + 30 || wall_len_right - 30 < len_right < wall_len_right + 30)
+        {
+          len_front = dist_calc(echo_duration_front);
+          len_left = dist_calc(echo_duration_left);
+          len_right = dist_calc(echo_duration_right);
+          mv_straight(dis_val, 0);
+        }
+
+        if (len_left > wall_len_left + 30 || len_right < wall_len_right - 30)
+        {
+          // INSERT LEFT TURN FUNCTION HERE
+          rotation = 5; //set desired rotation (TBC)
+          l = 0;//reset left itterator
+          r = 0;//reset right itterator
+          rotation = rotation * 17.44;//set desired rotation into ticks
+          mv_direction = 2; //set left turning mode
+          cur_rotation = 0; //reset currently rotation
+          HAL_TIM_Base_Start_IT(&htim3); //start tim_3
+        }
+        else if (len_right > wall_len_right + 30 || len_left < wall_len_left - 30)
+        {
+          // INSERT RIGHT TURN FUNCTION HERE
+          rotation = 5; //set desired rotation (TBC)
+          l = 0;//reset left itterator
+          r = 0;//reset right itterator
+          rotation = rotation * 17.44;//set desired rotation into ticks
+          mv_direction = 3; //set right turning mode
+          cur_rotation = 0; //reset currently rotation
+          HAL_TIM_Base_Start_IT(&htim3); //start tim_3
+        }
+      }
+      set_wa_trig = 0; // reset follow wa command trigger
     }
 
     HAL_Delay(600);
