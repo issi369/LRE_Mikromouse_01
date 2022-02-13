@@ -37,6 +37,27 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+
+/*
+//init UART module
+uint8_t UART1_rxBuffer[12] = {0};
+uint8_t Buffer[64] = {0};
+uint8_t Text[12] = {0};
+uint8_t length;
+
+//init buffer for UART transmit of US-Sensor
+uint8_t distance_str_front[200];
+uint8_t len_front = 0;
+uint8_t distance_str_left[200];
+uint8_t len_left = 0;
+uint8_t distance_str_right[200];
+uint8_t len_right = 0;
+
+//PLEASE ADD DESCRIPTION
+uint8_t distance_str_od[200];
+uint8_t len_od = 0;
+*/
+
 //define front US-Sensor corr. to US1
 uint16_t echo_duration_front;
 uint8_t echo_trig_front;
@@ -76,7 +97,7 @@ uint8_t tmds_trig;
 uint8_t tmod_trig;
 
 //move distance command trigger
-uint8_t set_dis_trig; 
+uint8_t mvds_trig; 
 uint16_t dis_val;
 
 // move speed command trigger
@@ -86,10 +107,22 @@ uint8_t set_sp_trig;
 //uint8_t reverse;
 uint8_t mv_direction;
 
+//turning variables
 uint8_t r; //lre_stepper iterrator for right motor when turning
 uint8_t l; //lre_stepper iterrator for left motor when turning
 uint16_t rotation; //select rotation distance in []
+//uint16_t rot;
 uint16_t cur_rotation; //current rotation distance in []
+uint8_t mvleft_trig;
+uint8_t mvright_trig;
+uint8_t in_rot;
+
+//parking variables
+uint8_t parking_trig;
+uint8_t front_wall_trig;
+uint8_t us_counter;
+uint8_t len_front_parking;
+uint8_t distance_str_parking[200];
 
 /* USER CODE END ET */
 

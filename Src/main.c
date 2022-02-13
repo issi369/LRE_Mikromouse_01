@@ -107,24 +107,32 @@ void delay (uint16_t time)
 
 void trig_front ()
 {
+  //HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COUNTER(&htim1,0);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+  //HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
 }
 
 void trig_left ()
 {
+  //HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COUNTER(&htim1,0);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+  //HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
 }
 
 void trig_right ()
 {
-  //echo_duration_front = 0;
+  //HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COUNTER(&htim1,0);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+  //HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
   
 }
  
@@ -154,33 +162,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 //give out total driven distance
   if (strcmp (Buffer, "tm od\r\n") == 0)
   {
-    /*len_od = sprintf(distance_str_od, "traveled distance approx.: %02d \r\n", od+od_buf);
-    HAL_UART_Transmit(&huart1, distance_str_od, len_od, 100); */
-
     tmod_trig = 1;
-
-    //memset(Buffer, 0, strlen(Buffer));
-
     return;
   }
 
 //give out current distance in all three directions
   else if (strcmp (Buffer, "tm ds\r\n") == 0)
   {
-    /*len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
-    HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
-
-    len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
-    HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
-
-    len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n", dist_calc(echo_duration_right));
-    HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); */
-    
     tmds_trig = 1;
-
-  //  Draw vertical line
-    /*uint8_t* message2 = "-------------------\r\n";
-    HAL_UART_Transmit(&huart1, message2, strlen(message2),100);*/
     return;
   }
 
@@ -188,7 +177,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   else if (strncmp (Buffer, "mv ds", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
-    set_dis_trig = 1;
+    mvds_trig = 1;
     return;
   }
 
@@ -197,12 +186,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   {
     strcpy(Text, &Buffer[6]);
     set_sp_trig = 1;
-    /*sp = atoi(Text);
-    length = sprintf(Buffer, "My predicted speed in mm/s is: %d\r\n", sp);
-    HAL_UART_Transmit(&huart1, Buffer, length, 100);*/
+    return;
+  }
 
-    //memset(Buffer, 0, strlen(Buffer));
+  else if (strncmp (Buffer, "mv lt", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
+  {
+    strcpy(Text, &Buffer[6]);
+    mvleft_trig = 1;
+    return;
+  }
 
+  else if (strncmp (Buffer, "mv rt", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
+  {
+    strcpy(Text, &Buffer[6]);
+    mvright_trig = 1;
+    return;
+  }
+
+  else if (strcmp (Buffer, "tr pk\r\n") == 0) 
+  {
+    //strcpy(Text, &Buffer[6]);
+    parking_trig = 1;
     return;
   }
 }
@@ -211,18 +215,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void mv_straight (uint16_t ds, uint8_t reverse)
   {
     mv_direction = reverse; //set driving direction
-
     current_dis = 0; //reset currently driven distance
-    target_dis = dis_val/0.061; //set target distance
-
-    p = 62500/sp; //update speed
-
-    __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1);
-    __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
-    HAL_TIM_Base_Start_IT(&htim3);
-
     dis_val = ds; //Solution for Bug: VS code tends to optimize ds which ends up deleting its content
-    length = sprintf(Buffer, "My predicted distance in mm is: %d\r\n", ds);
+    target_dis = dis_val/0.061; //set target distance
+    HAL_TIM_Base_Start_IT(&htim3);
+    length = sprintf(Buffer, "My predicted driving distance in mm is: %d\r\n", ds);
     HAL_UART_Transmit(&huart1, Buffer, length, 100);
   }
 /* USER CODE END 0 */
@@ -265,7 +262,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 //define properties of trigger timer (TIM_1)
-   __HAL_TIM_SET_PRESCALER(&htim1, SystemCoreClock/1e6-1);
+  __HAL_TIM_SET_PRESCALER(&htim1, SystemCoreClock/1e6-1);
   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 
 //initialize sensors
@@ -287,10 +284,10 @@ int main(void)
   t_0_right = 0;
   t_1_right = 0;
 
-  US_Select = 0;
+  US_Select = 3;
 
 //init drive straight trigger
-  set_dis_trig = 0;
+  mvds_trig = 0;
   dis_val = 0;
 
 //init send tm ds distance trigger
@@ -305,8 +302,14 @@ int main(void)
 //set default move direction for both wheels (1-reverse, 0-foreward)
   i = 0;
 
-  //choose both wheels as default
-  rotation = 1570; //corresponds to 90° turn
+//set default turning radius
+  rotation = 1570; //default turn: corresponds to 90° turn
+  mvleft_trig = 0;
+  mvright_trig = 0;
+
+//init parking variables
+  parking_trig = 0;
+  front_wall_trig = 0;
 
 //ADD COMMENT
   od_buf = 0;
@@ -333,15 +336,129 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if (set_dis_trig == 1)
+    if(mvds_trig == 1)
     {
       dis_val = atoi(Text); //read out buffer info
-      mv_straight(dis_val, 2); //call move function
-      set_dis_trig = 0; //reset move command trigger
+      mv_straight(dis_val, 0); //call move function
+      mvds_trig = 0; //reset move command trigger
+    }
+
+    else if (mvleft_trig == 1) //drive a left turn
+    {
+      rotation = atoi(Text); //read out buffer info
+      l = 0;//reset left itterator
+      r = 0;//reset right itterator
+      rotation = rotation * 17.44;//set desired rotation into ticks
+      mv_direction = 2; //set left turning mode
+      cur_rotation = 0; //reset currently rotation
+      HAL_TIM_Base_Start_IT(&htim3);
+      mvleft_trig = 0; //reset trigger
+      memset(Buffer, 0, strlen(Buffer)); //clear buffer
+    }
+
+    else if (mvright_trig == 1) //drive a right turn
+    {
+      rotation = atoi(Text); //read out buffer info
+      l = 0;//reset left itterator
+      r = 0;//reset right itterator
+      rotation = rotation * 17.44;//set desired rotation into ticks
+      mv_direction = 3; //set right turning mode
+      cur_rotation = 0; //reset currently rotation
+      HAL_TIM_Base_Start_IT(&htim3); //start tim_3
+      mvright_trig = 0; //reset trigger
+      memset(Buffer, 0, strlen(Buffer)); //clear buffer
+    }
+
+    else if (parking_trig == 1) //parking mode routine
+    {
+      mv_straight(2000, 0);      //drive straigh
+
+      while (front_wall_trig == 0)
+        {
+          US_Select = 0; //select front sensor
+          trig_front();
+          len_front_parking = sprintf(distance_str_parking, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
+          HAL_UART_Transmit(&huart1, distance_str_parking, len_front_parking, 100);
+          HAL_Delay(200);
+          if (dist_calc(echo_duration_front) < 60)
+          {
+            front_wall_trig = 1;
+          }
+        }
+
+      front_wall_trig = 0;
+      //turn left 180°
+      l = 0;//reset left itterator
+      r = 0;//reset right itterator
+      rotation = 180 * 17.44;//set desired rotation into ticks
+      mv_direction = 2; //set left turning mode
+      cur_rotation = 0; //reset currently rotation
+      in_rot = 1; //mouse is in rotation now
+      HAL_TIM_Base_Start_IT(&htim3);
+      while (in_rot == 1)
+      {
+
+      }
+      HAL_Delay(300); //small delay
+      //reverse for x cm
+      mv_straight(50, 1); //drive straigh
+
+      parking_trig = 0; //reset trigger
+      //mvleft_trig = 0; //reset trigger
+
+        /*
+      if (front_wall_trig == 1) // if wall detected in front
+      {
+        //turn left 180°
+        l = 0;//reset left itterator
+        r = 0;//reset right itterator
+        rotation = 180 * 17.44;//set desired rotation into ticks
+        mv_direction = 2; //set left turning mode
+        cur_rotation = 0; //reset currently rotation
+        HAL_TIM_Base_Start_IT(&htim3);
+        HAL_Delay(300); //small delay
+        mvleft_trig = 0; //reset trigger
+
+        //reverse for x cm
+        mv_straight(35, 1); //drive straigh
+
+        parking_trig = 0; //reset trigger
+      }*/
+      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
     else if (tmds_trig == 1)
     {
+      //trigger all sensors
+      US_Select = 0;
+
+      //  US 1
+      uint8_t distance_str_front[200];
+      uint8_t len_front = 0;
+
+      trig_front();
+      HAL_Delay(200);
+
+      US_Select = 1;
+
+      //  US 2 
+      uint8_t distance_str_left[200];
+      uint8_t len_left = 0;
+
+      trig_left();
+      HAL_Delay(200);
+
+      US_Select = 2;
+
+      //  US 3 
+      uint8_t distance_str_right[200];
+      uint8_t len_right = 0;
+
+      trig_right();
+      HAL_Delay(200);
+
+      //US_Select = 0;
+
       len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
       HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
 
@@ -366,24 +483,19 @@ int main(void)
       memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
-    else if (set_sp_trig == 1)
+    else if (set_sp_trig == 1) //send pred. speed
     {
-      sp = atoi(Text);
+      sp = atoi(Text); //copy commandes speed
+      p = 62500/sp; //update speed variable
+      __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1); //update tim3 prescaler
+      __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       length = sprintf(Buffer, "My predicted speed in mm/s is: %d\r\n", sp);
       HAL_UART_Transmit(&huart1, Buffer, length, 100);
       set_sp_trig = 0; //reset speed command trigger
       memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
-    /*
-    val = 20;
-    mv_turn(1, val);
-    p = 62500/sp; //update speed
-
-    __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1);
-    __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
-    HAL_TIM_Base_Start_IT(&htim3);
-*/
-
+/*
+// continiously read out sensor data
     //  US 1
     uint8_t distance_str_front[200];
     uint8_t len_front = 0;
@@ -410,7 +522,8 @@ int main(void)
     HAL_Delay(200);
 
     US_Select = 0;
-
+*/
+    HAL_Delay(600);
     memset(Buffer, 0, strlen(Buffer)); //reset buffer
   }
   /* USER CODE END 3 */

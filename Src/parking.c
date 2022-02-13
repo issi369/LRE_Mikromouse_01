@@ -36,11 +36,16 @@ void mv_turn (int left_turn, uint16_t rot)
 {
     if (left_turn == 1)
         {
-            l = 0;
-            r = 0;
-            rotation = rot;
-            //mv_direction = 2;
+            l = 0;//reset left itterator
+            r = 0;//reset right itterator
+            rotation = rot * 17.44;//set desired rotation
 
+            mv_direction = 2; //set left turning mode
+
+            cur_rotation = 0; //reset currently rotation
+            //target_dis = dis_val/0.061; //set target distance
+
+            p = 62500/sp; //update speed
         }
 
     else if (left_turn == 0)
