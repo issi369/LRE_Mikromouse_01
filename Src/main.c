@@ -187,6 +187,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
+  else if (strcmp (Buffer, "mv wa\r\n") == 0)
+  {
+    set_wa_trig = 1;
+    return;
+  }
+
   else if (strncmp (Buffer, "mv lt", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
@@ -219,6 +225,7 @@ void mv_straight (uint16_t ds, uint8_t reverse)
     HAL_TIM_Base_Start_IT(&htim3);
     length = sprintf(Buffer, "My predicted driving distance in mm is: %d\r\n", ds);
     HAL_UART_Transmit(&huart1, Buffer, length, 100);
+    memset(Buffer, 0, strlen(Buffer)); //clear buffer
   }
 /* USER CODE END 0 */
 
@@ -369,7 +376,7 @@ int main(void)
 
     else if (parking_trig == 1) //parking mode routine
     {
-      mv_straight(2000, 0);      //drive straigh
+      mv_straight(2000, 0);      //drive straight
 
       while (front_wall_trig == 0)
         {
@@ -485,14 +492,21 @@ int main(void)
       //len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
       //HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
 
-      wall_len_left = dist_calc(echo_duration_left);
-      len_left = dist_calc(echo_duration_left);
+      //US_Select = 1;
+      //trig_left();
+      //HAL_Delay(200);
+      wall_len_left = 30;
+      //len_left = dist_calc(echo_duration_left);
       
       //len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n", dist_calc(echo_duration_right));
       //HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100); 
 
-      wall_len_right = dist_calc(echo_duration_right);
-      len_right = dist_calc(echo_duration_right);
+      //US_Select = 2;
+      //trig_right();
+      //HAL_Delay(200);
+      wall_len_right = 30;
+      //len_right = dist_calc(echo_duration_right);
+
       //  Draw vertical line
       //uint8_t* message2 = "-------------------\r\n";
       //HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
@@ -503,18 +517,31 @@ int main(void)
       //  Move along wall function which enbales the mv_straight until deviation is detected or od > dist_val
       while (dis_val > od)
       {
+        mv_straight(dis_val, 0);
+        //memset(Buffer, 0, strlen(Buffer)); //clear buffer
 
-        while (wall_len_left - 30 < len_left < wall_len_left + 30 || wall_len_right - 30 < len_right < wall_len_right + 30)
+        while (wall_len_left - 10 < len_left < wall_len_left + 10 || wall_len_right - 10 < len_right < wall_len_right + 10)
         {
-          len_front = dist_calc(echo_duration_front);
+          //len_front = dist_calc(echo_duration_front);
+
+          US_Select = 1;
+          trig_left();
+          HAL_Delay(200);
           len_left = dist_calc(echo_duration_left);
+          len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
+          HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100); 
+
+
+          US_Select = 2;
+          trig_right();
+          HAL_Delay(200);
           len_right = dist_calc(echo_duration_right);
-          mv_straight(dis_val, 0);
         }
 
-        if (len_left > wall_len_left + 30 || len_right < wall_len_right - 30)
+        if (len_left > wall_len_left + 10 || len_right < wall_len_right - 10)
         {
           // INSERT LEFT TURN FUNCTION HERE
+          HAL_TIM_Base_Stop_IT(&htim3);
           rotation = 5; //set desired rotation (TBC)
           l = 0;//reset left itterator
           r = 0;//reset right itterator
@@ -523,9 +550,10 @@ int main(void)
           cur_rotation = 0; //reset currently rotation
           HAL_TIM_Base_Start_IT(&htim3); //start tim_3
         }
-        else if (len_right > wall_len_right + 30 || len_left < wall_len_left - 30)
+        else if (len_right > wall_len_right + 10 || len_left < wall_len_left - 10)
         {
           // INSERT RIGHT TURN FUNCTION HERE
+          HAL_TIM_Base_Stop_IT(&htim3);
           rotation = 5; //set desired rotation (TBC)
           l = 0;//reset left itterator
           r = 0;//reset right itterator
