@@ -107,32 +107,26 @@ void delay (uint16_t time)
 
 void trig_front ()
 {
-  //HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
   __HAL_TIM_SET_COUNTER(&htim1,0);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-  //HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
 }
 
 void trig_left ()
 {
-  //HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
   __HAL_TIM_SET_COUNTER(&htim1,0);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-  //HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
 }
 
 void trig_right ()
 {
-  //HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
   __HAL_TIM_SET_COUNTER(&htim1,0);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
   delay(2);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-  //HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
   
 }
  
@@ -387,6 +381,7 @@ int main(void)
         }
 
       front_wall_trig = 0;
+
       //turn left 180°
       l = 0;//reset left itterator
       r = 0;//reset right itterator
@@ -404,26 +399,6 @@ int main(void)
       mv_straight(50, 1); //drive straigh
 
       parking_trig = 0; //reset trigger
-      //mvleft_trig = 0; //reset trigger
-
-        /*
-      if (front_wall_trig == 1) // if wall detected in front
-      {
-        //turn left 180°
-        l = 0;//reset left itterator
-        r = 0;//reset right itterator
-        rotation = 180 * 17.44;//set desired rotation into ticks
-        mv_direction = 2; //set left turning mode
-        cur_rotation = 0; //reset currently rotation
-        HAL_TIM_Base_Start_IT(&htim3);
-        HAL_Delay(300); //small delay
-        mvleft_trig = 0; //reset trigger
-
-        //reverse for x cm
-        mv_straight(35, 1); //drive straigh
-
-        parking_trig = 0; //reset trigger
-      }*/
       memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
@@ -494,35 +469,7 @@ int main(void)
       set_sp_trig = 0; //reset speed command trigger
       memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
-/*
-// continiously read out sensor data
-    //  US 1
-    uint8_t distance_str_front[200];
-    uint8_t len_front = 0;
 
-    trig_front();
-    HAL_Delay(200);
-
-    US_Select = 1;
-
-    //  US 2 
-    uint8_t distance_str_left[200];
-    uint8_t len_left = 0;
-
-    trig_left();
-    HAL_Delay(200);
-
-    US_Select = 2;
-
-    //  US 3 
-    uint8_t distance_str_right[200];
-    uint8_t len_right = 0;
-
-    trig_right();
-    HAL_Delay(200);
-
-    US_Select = 0;
-*/
     HAL_Delay(600);
     memset(Buffer, 0, strlen(Buffer)); //reset buffer
   }

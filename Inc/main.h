@@ -100,18 +100,16 @@ uint8_t tmod_trig;
 uint8_t mvds_trig; 
 uint16_t dis_val;
 
-// move speed command trigger
+//move speed command trigger
 uint8_t set_sp_trig;
 
 //move direction
-//uint8_t reverse;
 uint8_t mv_direction;
 
 //turning variables
 uint8_t r; //lre_stepper iterrator for right motor when turning
 uint8_t l; //lre_stepper iterrator for left motor when turning
 uint16_t rotation; //select rotation distance in []
-//uint16_t rot;
 uint16_t cur_rotation; //current rotation distance in []
 uint8_t mvleft_trig;
 uint8_t mvright_trig;

@@ -233,22 +233,8 @@ void TIM3_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
 
-  if (mv_direction == 0)
+  if (mv_direction == 0)//forward
     {
-      /*
-      if (parking_trig == 1 && us_counter == 0) //read out front sensor [only in parking mode]
-      {
-        US_Select = 0; //select front sensor
-        trig_front();
-        len_front_parking = sprintf(distance_str_parking, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
-        HAL_UART_Transmit(&huart1, distance_str_parking, len_front_parking, 100);
-        //HAL_Delay(200);
-      }
-      us_counter++;
-      if (us_counter == 500)
-      {
-        us_counter = 0;
-      }*/
       //iterrate through stepper function
       lre_stepper_setStep(i, 1, 1); 
       i++;
@@ -278,18 +264,9 @@ void TIM3_IRQHandler(void)
           od = 0; //reset current driven distance
           return;
       }
-      /*
-      else if (dist_calc(echo_duration_front) < 50)
-      {
-          front_wall_trig = 1; //front wall detected
-          HAL_TIM_Base_Stop_IT(&htim3); //stop timer
-          od_buf = od_buf + od; //add new distance to already driven distance
-          od = 0; //reset current driven distance
-          return;
-      }*/
     }
 
-  else if (mv_direction == 1)
+  else if (mv_direction == 1) //reverse
     {
       //iterrate through stepper function
       lre_stepper_setStep(i, 1, 1);
