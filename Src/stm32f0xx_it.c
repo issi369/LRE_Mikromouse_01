@@ -239,7 +239,7 @@ void TIM3_IRQHandler(void)
       lre_stepper_setStep(i, 1, 1); 
       i++;
       current_dis++; //current tick
-      od = current_dis*0.061; //current distance
+      od = current_dis*0.061; //current distance in mm
 
       if (i > 7) //reset stepper iterrator after 8 steps
         {

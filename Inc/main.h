@@ -38,26 +38,6 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
-/*
-//init UART module
-uint8_t UART1_rxBuffer[12] = {0};
-uint8_t Buffer[64] = {0};
-uint8_t Text[12] = {0};
-uint8_t length;
-
-//init buffer for UART transmit of US-Sensor
-uint8_t distance_str_front[200];
-uint8_t len_front = 0;
-uint8_t distance_str_left[200];
-uint8_t len_left = 0;
-uint8_t distance_str_right[200];
-uint8_t len_right = 0;
-
-//PLEASE ADD DESCRIPTION
-uint8_t distance_str_od[200];
-uint8_t len_od = 0;
-*/
-
 //define front US-Sensor corr. to US1
 uint16_t echo_duration_front;
 uint8_t echo_trig_front;
@@ -127,6 +107,10 @@ uint8_t distance_str_parking[200];
 
 //follow wall variables
 uint16_t cur_dis_left;
+
+//follow corner variables
+uint8_t corner_trig;
+uint8_t check_for_corner;
 
 /* USER CODE END ET */
 
