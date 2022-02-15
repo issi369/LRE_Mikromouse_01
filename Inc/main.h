@@ -125,6 +125,9 @@ uint8_t us_counter;
 uint8_t len_front_parking;
 uint8_t distance_str_parking[200];
 
+//follow wall variables
+uint16_t cur_dis_left;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
