@@ -233,6 +233,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     lab_turn_trig = 1;
     return;
   }
+
+//Das hier ist neu @ max
+
 /*
     else if (strcmp (Buffer, "tr 4.1\r\n") == 0) 
   {
