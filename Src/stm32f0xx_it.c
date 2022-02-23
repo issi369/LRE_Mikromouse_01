@@ -298,12 +298,12 @@ void TIM3_IRQHandler(void)
       lre_stepper_setStep(r, 0, 1); //trigger right motor to turn c-wise
 
       r++;
-      if (l == 0) //reset stepper iterrator after 8 steps
+      if (l == 0) //reset stepper iterator after 8 steps
         {
           l = 8;
         } 
       
-      if (r > 7) //reset stepper iterrator after 8 steps
+      if (r > 7) //reset stepper iterator after 8 steps
         {
           r = 0;
         } 
@@ -327,12 +327,12 @@ void TIM3_IRQHandler(void)
       lre_stepper_setStep(r, 0, 1); //trigger right motor to turn c-wise
 
       l++;
-      if (r == 0) //reset stepper iterrator after 8 steps
+      if (r == 0) //reset stepper iterator after 8 steps
         {
           r = 8;
         } 
       
-      if (l > 7) //reset stepper iterrator after 8 steps
+      if (l > 7) //reset stepper iterator after 8 steps
         {
           l = 0;
         } 

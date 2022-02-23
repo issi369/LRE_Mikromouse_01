@@ -117,8 +117,10 @@ uint8_t check_for_corner;
 //drive through labyrinth
 uint8_t lab_drv_trig;
 uint8_t lab_turn_trig;
+uint8_t lab_turnaround_trig;
+uint8_t lab_turnleft_trig;
 uint16_t cells;
-uint16_t total_cells;
+uint16_t current_cell;
 
 //uint8_t lab_det_trig;
 uint8_t lab_exp_trig;

@@ -234,6 +234,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
+  else if (strncmp(Buffer, "tr 4.1.3", 8) == 0)  // trigger task 4.1.3 "turn around and drive back to right turn location"
+  {
+    lab_turnaround_trig = 1;
+    return;
+  }
+
+   else if (strncmp(Buffer, "tr 4.1.3", 8) == 0)  // trigger task 4.1.4 "turn left and drive back to the start position of 4.1.1"
+  {
+    lab_turnleft_trig = 1;
+    return;
+  }
+
 /*
     else if (strcmp (Buffer, "tr 4.1\r\n") == 0) 
   {
@@ -258,10 +270,10 @@ void mv_straight (uint16_t ds, uint8_t reverse)
 
 void turn (uint16_t rot_dis, uint8_t rot_dir)
 {
-      l = 0;//reset left itterator
-      r = 0;//reset right itterator
+      l = 0;//reset left iterator
+      r = 0;//reset right iterator
       rotation = rot_dis * rot_norm;//set desired rotation into ticks
-      mv_direction = rot_dir; //set left turning mode
+      mv_direction = rot_dir; //set turning mode
       cur_rotation = 0; //reset currently rotation
       in_rot = 1;
       HAL_TIM_Base_Start_IT(&htim3);
@@ -599,21 +611,37 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       corner_trig = 0;
     }
 
-    else if (lab_drv_trig == 1)
+    else if (lab_drv_trig == 1) // drive certain amount of cells
     {
       cells = atoi(Text);
       follow_wall(cells * 200);
       lab_drv_trig = 0;
-      total_cells = total_cells + cells;
+      current_cell = current_cell + cells;
     }
 
-    else if (lab_turn_trig)
+    else if (lab_turn_trig) // turn right and drive certain amount of cells
     {
       cells = atoi(Text);
       turn(90, 3);
       follow_wall(cells * 200);
-      lab_drv_trig = 0;
-      total_cells = total_cells + cells;
+      lab_turn_trig = 0;
+      current_cell = current_cell + cells;
+    }
+
+    else if (lab_turnaround_trig) // turn around and return to the right turn position
+    {
+      turn(180, 3);
+      follow_wall(cells * 200);
+      lab_turnaround_trig = 0;
+      current_cell = current_cell - cells;
+    }
+
+    else if (lab_turnleft_trig) // turn left at the right turn position and return to the start of 4.1.1
+    {
+      turn(90, 2);
+      follow_wall(current_cell * 200); // current cell is used here, since it is the distance left to the start point
+      lab_turnleft_trig = 0;
+      current_cell = 0; // start point reached 
     }
 
     HAL_Delay(600);
