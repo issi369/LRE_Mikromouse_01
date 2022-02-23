@@ -262,6 +262,7 @@ void TIM3_IRQHandler(void)
           HAL_TIM_Base_Stop_IT(&htim3); //stop timer
           od_buf = od_buf + od; //add new distance to already driven distance
           od = 0; //reset current driven distance
+          front_wall_trig = 0;
           return;
       }
     }

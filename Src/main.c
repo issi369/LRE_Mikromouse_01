@@ -92,8 +92,8 @@ uint8_t distance_str_right[200];
 uint8_t len_right = 0;
 
 //init buffer for follow wall initial distances
-uint8_t wall_len_left = 0;
-uint8_t wall_len_right = 0;
+uint8_t wall_len_left = 35; // Set desired distance to left wall
+uint8_t wall_len_right = 35; // Set desired distance to right wall
 
 //PLEASE ADD DESCRIPTION
 uint8_t distance_str_od[200];
@@ -143,6 +143,7 @@ uint16_t dist_calc (uint16_t echo_time)
   return distance;
 }
 
+//start of UART Callback Checker
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {    
   HAL_UART_Receive_IT(&huart1, UART1_rxBuffer, 1);
@@ -157,21 +158,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     strcat (Buffer, UART1_rxBuffer);
   }
 
-//give out total driven distance
+  //give out total driven distance
   if (strcmp (Buffer, "tm od\r\n") == 0)
   {
     tmod_trig = 1;
     return;
   }
 
-//give out current distance in all three directions
+  //give out current distance in all three directions
   else if (strcmp (Buffer, "tm ds\r\n") == 0)
   {
     tmds_trig = 1;
     return;
   }
 
-//command straight movement with fixed driving-distance
+  //command straight movement with fixed driving-distance
   else if (strncmp (Buffer, "mv ds", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
@@ -179,7 +180,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
-//command change in motor-speed (for both motors)
+  //command change in motor-speed (for both motors)
   else if (strncmp (Buffer, "mv sp", 5) == 0 && strncmp (&Buffer[10], "\r\n", 2) == 0)
   {
     strcpy(Text, &Buffer[6]);
@@ -187,7 +188,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
-  else if (strcmp (Buffer, "mv wa\r\n") == 0)
+  else if (strcmp (Buffer, "tr wa\r\n") == 0)
   {
     set_wa_trig = 1;
     return;
@@ -209,18 +210,37 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
   else if (strcmp (Buffer, "tr pk\r\n") == 0) 
   {
-    //strcpy(Text, &Buffer[6]);
     parking_trig = 1;
     return;
   }
 
   else if (strcmp (Buffer, "tr cn\r\n") == 0) 
   {
-    //strcpy(Text, &Buffer[6]);
     corner_trig = 1;
     return;
   }
+
+  else if (strncmp(Buffer, "tr 4.1.1", 8) == 0)  // trigger task 4.1.1 "drive straight for XXXX cells"
+  {
+    strcpy(Text, &Buffer[9]);
+    lab_drv_trig = 1;
+    return;
+  }
+
+  else if (strncmp(Buffer, "tr 4.1.2", 8) == 0)  // trigger task 4.1.2 "turn 90° right and drive straight for XXXX cells"
+  {
+    strcpy(Text, &Buffer[9]);
+    lab_turn_trig = 1;
+    return;
+  }
+/*
+    else if (strcmp (Buffer, "tr 4.1\r\n") == 0) 
+  {
+    lab_drv_trig = 1;
+    return;
+  }*/
 }
+//end of UART Callback Checker
 
 //void fnct to drive straight for a given distance
 void mv_straight (uint16_t ds, uint8_t reverse)
@@ -235,10 +255,26 @@ void mv_straight (uint16_t ds, uint8_t reverse)
     memset(Buffer, 0, strlen(Buffer)); //clear buffer
   }
 
-void follow_wall (void)
+void turn (uint16_t rot_dis, uint8_t rot_dir)
 {
-      wall_len_left = 50; // Set desired distance to left wall
-      mv_straight(2000, 0);  // Set distance 2 meters , drive foreward
+      l = 0;//reset left itterator
+      r = 0;//reset right itterator
+      rotation = rot_dis * rot_norm;//set desired rotation into ticks
+      mv_direction = rot_dir; //set left turning mode
+      cur_rotation = 0; //reset currently rotation
+      in_rot = 1;
+      HAL_TIM_Base_Start_IT(&htim3);
+      while (in_rot == 1)
+      {
+          // wait for rotation to complete
+      }
+      HAL_Delay(300); //small delay
+}
+
+// follow wall/corner Function
+void follow_wall (uint16_t ds)
+{
+      mv_straight(ds, 0);  // Set distance 2 meters , drive foreward
 
       //  Move along wall function which enbales the mv_straight until deviation is detected or od > dist_val
       while (current_dis < target_dis)
@@ -246,10 +282,18 @@ void follow_wall (void)
         // check distance to left wall
         US_Select = 1;
         trig_left();
-        HAL_Delay(300);
+        HAL_Delay(500);
         cur_dis_left = dist_calc(echo_duration_left);
-        len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", dist_calc(echo_duration_left));
+        len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", cur_dis_left);
         HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100);
+
+        // check distance to right wall
+        US_Select = 2;
+        trig_right();
+        HAL_Delay(500);
+        cur_dis_right = dist_calc(echo_duration_right);
+        len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n--------- \r\n", cur_dis_right);
+        HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100);
 
         if (check_for_corner == 1) // active corner-checking by enabling front-sensor trigger
         {
@@ -262,69 +306,48 @@ void follow_wall (void)
           {
             front_wall_trig = 1;
             HAL_Delay(300); //small delay
-            front_wall_trig = 0;
 
             //turn right 90°
-            l = 0;//reset left itterator
-            r = 0;//reset right itterator
-            rotation = 90 * 17.44;//set desired rotation into ticks
-            mv_direction = 3; //set right turning mode
-            cur_rotation = 0; //reset currently rotation
-            in_rot = 1; //mouse is in rotation now
-            HAL_TIM_Base_Start_IT(&htim3);
-            while (in_rot == 1)
-            {
+            turn(90, 3);//right = 3
 
-            }
-            HAL_Delay(300); //small delay
           }
         }
 
         if (cur_dis_left > wall_len_left + 15)// || cur_dis_left < wall_len_right - 10)
         {
-          // left turn if wall too close
-          HAL_TIM_Base_Stop_IT(&htim3);
-          rotation = 3; //set desired rotation
-          l = 0;//reset left itterator
-          r = 0;//reset right itterator
-          rotation = rotation * 17.44;//set desired rotation into ticks
-          mv_direction = 2; //set left turning mode
-          cur_rotation = 0; //reset currently rotation
-          in_rot = 1;
-          HAL_TIM_Base_Start_IT(&htim3); //start tim_3
-          while (in_rot == 1)
-          {
+          // left turn if left wall too far
+          uint8_t* message2 = "LEFT TURN\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          turn(5, 2);//left = 2
 
-          }
-          HAL_Delay(200);
-          mv_direction = 0;
+          mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
-          HAL_Delay(300);
+          HAL_Delay(500);
         }
 
+        else if (cur_dis_right > wall_len_right + 15) //len_right > wall_len_right + 10 || 
+        {
+          // right turn if left wall too close
+          uint8_t* message2 = "RIGHT TURN\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          turn(5, 3);//right = 3
+
+          mv_direction = 0; //resume straight drive
+          HAL_TIM_Base_Start_IT(&htim3);
+          HAL_Delay(500);
+        }
+
+/* REMOVED as sensors read wrong values close to a wall
         else if (cur_dis_left < wall_len_left - 10) //len_right > wall_len_right + 10 || 
         {
-          // right turn if wall to far
-          HAL_TIM_Base_Stop_IT(&htim3);
-          rotation = 5; //set desired rotation 
-          l = 0;//reset left itterator
-          r = 0;//reset right itterator
-          rotation = rotation * 17.44;//set desired rotation into ticks
-          mv_direction = 3; //set right turning mode
-          cur_rotation = 0; //reset currently rotation
-          in_rot = 1;
-          HAL_TIM_Base_Start_IT(&htim3); //start tim_3
-          while (in_rot == 1)
-          {
+          // right turn if left wall too close
+          turn(5, 3);//right = 3
 
-          }
-          HAL_Delay(200);
-          mv_direction = 0;
+          mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
           HAL_Delay(300);
-        }
+        }*/
       }
-    //set_wa_trig = 0; // reset follow wa command trigger
 }
 /* USER CODE END 0 */
 
@@ -410,7 +433,8 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
   i = 0;
 
 //set default turning radius
-  rotation = 1570; //default turn: corresponds to 90° turn
+  rotation = 0; //default turn: corresponds to 90° turn
+  rot_norm = 17.18;
   mvleft_trig = 0;
   mvright_trig = 0;
 
@@ -418,12 +442,13 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
   parking_trig = 0;
   front_wall_trig = 0;
 
+//init labyrinth variables
+  lab_drv_trig = 0;
+
 //ADD COMMENT
   od_buf = 0;
   od = 0;
 
-  //Temporary
-  uint16_t val;
 
   HAL_Init();
   SystemClock_Config();
@@ -443,7 +468,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if(mvds_trig == 1)
+    if(mvds_trig == 1) //drive straight
     {
       dis_val = atoi(Text); //read out buffer info
       mv_straight(dis_val, 0); //call move function
@@ -453,27 +478,15 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
     else if (mvleft_trig == 1) //drive a left turn
     {
       rotation = atoi(Text); //read out buffer info
-      l = 0;//reset left itterator
-      r = 0;//reset right itterator
-      rotation = rotation * 17.44;//set desired rotation into ticks
-      mv_direction = 2; //set left turning mode
-      cur_rotation = 0; //reset currently rotation
-      HAL_TIM_Base_Start_IT(&htim3);
+      turn(rotation, 2);//left = 2
       mvleft_trig = 0; //reset trigger
-      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
     else if (mvright_trig == 1) //drive a right turn
     {
       rotation = atoi(Text); //read out buffer info
-      l = 0;//reset left itterator
-      r = 0;//reset right itterator
-      rotation = rotation * 17.44;//set desired rotation into ticks
-      mv_direction = 3; //set right turning mode
-      cur_rotation = 0; //reset currently rotation
-      HAL_TIM_Base_Start_IT(&htim3); //start tim_3
+      turn(rotation, 3);//right = 3
       mvright_trig = 0; //reset trigger
-      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
     else if (parking_trig == 1) //parking mode routine
@@ -496,26 +509,14 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       front_wall_trig = 0;
 
       //turn left 180°
-      l = 0;//reset left itterator
-      r = 0;//reset right itterator
-      rotation = 180 * 17.44;//set desired rotation into ticks
-      mv_direction = 2; //set left turning mode
-      cur_rotation = 0; //reset currently rotation
-      in_rot = 1; //mouse is in rotation now
-      HAL_TIM_Base_Start_IT(&htim3);
-      while (in_rot == 1)
-      {
+      turn(180, 2);//left = 2 
 
-      }
-      HAL_Delay(300); //small delay
       //reverse for x cm
-      mv_straight(50, 1); //drive straigh
-
+      mv_straight(50, 1); //drive reverse
       parking_trig = 0; //reset trigger
-      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
-    else if (tmds_trig == 1)
+    else if (tmds_trig == 1) //read out all sensor data
     {
       //trigger all sensors
       US_Select = 0;
@@ -545,7 +546,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       trig_right();
       HAL_Delay(200);
 
-      //US_Select = 0;
+      // sent data via UART
 
       len_front = sprintf(distance_str_front, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
       HAL_UART_Transmit(&huart1, distance_str_front, len_front, 100); 
@@ -563,15 +564,14 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       tmds_trig = 0; //reset tmds command trigger
     }
 
-    else if (tmod_trig == 1)
+    else if (tmod_trig == 1) // sent currently driven distance
     {
       len_od = sprintf(distance_str_od, "traveled distance approx.: %02d \r\n", od+od_buf);
       HAL_UART_Transmit(&huart1, distance_str_od, len_od, 100); 
       tmod_trig = 0; //reset tmod command trigger
-      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
-    else if (set_sp_trig == 1) //send pred. speed
+    else if (set_sp_trig == 1) //change motor speed
     {
       sp = atoi(Text); //copy commandes speed
       p = 62500/sp; //update speed variable
@@ -580,23 +580,39 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       length = sprintf(Buffer, "My predicted speed in mm/s is: %d\r\n", sp);
       HAL_UART_Transmit(&huart1, Buffer, length, 100);
       set_sp_trig = 0; //reset speed command trigger
-      memset(Buffer, 0, strlen(Buffer)); //clear buffer
     }
 
-    //Follow wall function
-    else if (set_wa_trig == 1)
+
+    else if (set_wa_trig == 1) // follow wall function /w corner function disabled
     {
       check_for_corner = 0;
-      follow_wall();
+      follow_wall(2000);
       set_wa_trig = 0; // reset follow wa command trigger
     }
 
-    //Follow corner function
-    else if (corner_trig == 1)
+    
+    else if (corner_trig == 1) // follow wall function /w corner function enabled
     {
       check_for_corner = 1;
-      follow_wall();
+      follow_wall(2000);
       corner_trig = 0;
+    }
+
+    else if (lab_drv_trig == 1)
+    {
+      cells = atoi(Text);
+      follow_wall(cells * 200);
+      lab_drv_trig = 0;
+      total_cells = total_cells + cells;
+    }
+
+    else if (lab_turn_trig)
+    {
+      cells = atoi(Text);
+      turn(90, 3);
+      follow_wall(cells * 200);
+      lab_drv_trig = 0;
+      total_cells = total_cells + cells;
     }
 
     HAL_Delay(600);

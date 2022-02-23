@@ -96,7 +96,8 @@ uint16_t rotation; //select rotation distance in []
 uint16_t cur_rotation; //current rotation distance in []
 uint8_t mvleft_trig;
 uint8_t mvright_trig;
-uint8_t in_rot;
+uint8_t in_rot; 
+uint8_t rot_norm; //transformation coef from ° to ticks
 
 //parking variables
 uint8_t parking_trig;
@@ -107,10 +108,21 @@ uint8_t distance_str_parking[200];
 
 //follow wall variables
 uint16_t cur_dis_left;
+uint16_t cur_dis_right;
 
 //follow corner variables
 uint8_t corner_trig;
 uint8_t check_for_corner;
+
+//drive through labyrinth
+uint8_t lab_drv_trig;
+uint8_t lab_turn_trig;
+uint16_t cells;
+uint16_t total_cells;
+
+//uint8_t lab_det_trig;
+uint8_t lab_exp_trig;
+uint8_t lab_slv_trig;
 
 /* USER CODE END ET */
 
