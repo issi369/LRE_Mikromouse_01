@@ -622,8 +622,10 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
     else if (lab_turn_trig) // turn right and drive certain amount of cells
     {
       cells = atoi(Text);
-      turn(90, 3);
-      follow_wall(cells * 200);
+      turn(70, 3);
+      follow_wall(20);
+      turn(20, 3);
+      follow_wall((cells * 200)-15);
       lab_turn_trig = 0;
       current_cell = current_cell + cells;
     }
