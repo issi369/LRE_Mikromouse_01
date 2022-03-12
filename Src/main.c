@@ -623,9 +623,9 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
     {
       cells = atoi(Text);
       turn(70, 3);
-      follow_wall(20);
+      follow_wall(50);
       turn(20, 3);
-      follow_wall((cells * 200)-15);
+      follow_wall((cells * 200)-40);
       lab_turn_trig = 0;
       current_cell = current_cell + cells;
     }
