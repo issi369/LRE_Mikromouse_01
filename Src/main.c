@@ -326,7 +326,7 @@ void follow_wall (uint16_t ds)
           }
         }
 
-        if (cur_dis_left > wall_len_left + 30)// || cur_dis_left < wall_len_right - 10)
+        if (150 > cur_dis_left > wall_len_left + 40)// || cur_dis_left < wall_len_right - 10)
         {
           // left turn if left wall too far
           uint8_t* message2 = "LEFT TURN\r\n";
@@ -338,7 +338,7 @@ void follow_wall (uint16_t ds)
           HAL_Delay(500);
         }
 
-        else if (cur_dis_right > wall_len_right + 30) //len_right > wall_len_right + 10 || 
+        else if (150 > cur_dis_right > wall_len_right + 40) //len_right > wall_len_right + 10 || 
         {
           // right turn if left wall too close
           uint8_t* message2 = "RIGHT TURN\r\n";
