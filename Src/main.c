@@ -220,14 +220,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
-  else if (strncmp(Buffer, "tr 4.1.1", 8) == 0)  // trigger task 4.1.1 "drive straight for XXXX cells"
+  else if (strncmp(Buffer, "tr 4.1.1", 8) == 0 && strncmp (&Buffer[13], "\r\n", 2) == 0)  // trigger task 4.1.1 "drive straight for XXXX cells"
   {
     strcpy(Text, &Buffer[9]);
     lab_drv_trig = 1;
     return;
   }
 
-  else if (strncmp(Buffer, "tr 4.1.2", 8) == 0)  // trigger task 4.1.2 "turn 90° right and drive straight for XXXX cells"
+  else if (strncmp(Buffer, "tr 4.1.2", 8) == 0 && strncmp (&Buffer[13], "\r\n", 2) == 0)  // trigger task 4.1.2 "turn 90° right and drive straight for XXXX cells"
   {
     strcpy(Text, &Buffer[9]);
     lab_turn_trig = 1;
