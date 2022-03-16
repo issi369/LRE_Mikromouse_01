@@ -239,7 +239,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
-   else if (strncmp(Buffer, "tr 4.1.3", 8) == 0)  // trigger task 4.1.4 "turn left and drive back to the start position of 4.1.1"
+   else if (strncmp(Buffer, "tr 4.1.4", 8) == 0)  // trigger task 4.1.4 "turn left and drive back to the start position of 4.1.1"
   {
     lab_turnleft_trig = 1;
     return;
