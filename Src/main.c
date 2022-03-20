@@ -240,7 +240,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
-   else if (strncmp(Buffer, "tr 4.1.3", 8) == 0)  // trigger task 4.1.4 "turn left and drive back to the start position of 4.1.1"
+   else if (strncmp(Buffer, "tr 4.1.4", 8) == 0)  // trigger task 4.1.4 "turn left and drive back to the start position of 4.1.1"
   {
     lab_turnleft_trig = 1;
     return;
@@ -326,10 +326,10 @@ void follow_wall (uint16_t ds)
           }
         }
 
-        if (150 > cur_dis_left > wall_len_left + 40)// || cur_dis_left < wall_len_right - 10)
+        if (cur_dis_left > wall_len_left + 40)// || cur_dis_left < wall_len_right - 10)
         {
           // left turn if left wall too far
-          uint8_t* message2 = "LEFT TURN\r\n";
+          uint8_t* message2 = "LEFT FOLLOW\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
           turn(5, 2);//left = 2
 
@@ -338,10 +338,10 @@ void follow_wall (uint16_t ds)
           HAL_Delay(500);
         }
 
-        else if (150 > cur_dis_right > wall_len_right + 40) //len_right > wall_len_right + 10 || 
+        else if (cur_dis_right > wall_len_right + 40) //len_right > wall_len_right + 10 || 
         {
           // right turn if left wall too close
-          uint8_t* message2 = "RIGHT TURN\r\n";
+          uint8_t* message2 = "RIGHT FOLLOW\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
           turn(5, 3);//right = 3
 
@@ -447,7 +447,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
 //set default turning radius
   rotation = 0; //default turn: corresponds to 90° turn
-  rot_norm = 17.18;
+  rot_norm = 16.55;
   mvleft_trig = 0;
   mvright_trig = 0;
 

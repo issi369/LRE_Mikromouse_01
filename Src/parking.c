@@ -38,7 +38,7 @@ void mv_turn (int left_turn, uint16_t rot)
         {
             l = 0;//reset left itterator
             r = 0;//reset right itterator
-            rotation = rot * 17.44;//set desired rotation
+            rotation = rot * 16.55;//set desired rotation
 
             mv_direction = 2; //set left turning mode
 
