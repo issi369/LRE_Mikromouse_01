@@ -326,24 +326,24 @@ void follow_wall (uint16_t ds)
           }
         }
 
-        if (cur_dis_left > wall_len_left + 25 && cur_dis_left < 80)
+        if (cur_dis_left > wall_len_left + 30 && cur_dis_left < 100)
         {
           // left turn if left wall too far
           uint8_t* message2 = "LEFT FOLLOW\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(5, 2);//left = 2
+          turn(3, 2);//left = 2
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
           HAL_Delay(500);
         }
 
-        else if (cur_dis_right > wall_len_right + 25 && cur_dis_right < 80) 
+        else if (cur_dis_right > wall_len_right + 30 && cur_dis_right < 100) 
         {
           // right turn if left wall too close
           uint8_t* message2 = "RIGHT FOLLOW\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(5, 3);//right = 3
+          turn(3, 3);//right = 3
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
@@ -447,7 +447,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
 //set default turning radius
   rotation = 0; //default turn: corresponds to 90° turn
-  rot_norm = 16.55;
+  rot_norm = 16.2;
   mvleft_trig = 0;
   mvright_trig = 0;
 
@@ -622,10 +622,8 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
     else if (lab_turn_trig) // turn right and drive certain amount of cells
     {
       cells = atoi(Text);
-      turn(70, 3);
-      follow_wall(40);
-      turn(20, 3);
-      follow_wall((cells * 200)-30);
+      turn(90, 3);
+      follow_wall(cells * 200);
       lab_turn_trig = 0;
       current_cell = current_cell + cells;
     }
