@@ -246,6 +246,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
+  else if (strcmp (Buffer, "mz explore\r\n") == 0) // trigger labyrinth explore to middle
+  {
+    maze_explore_trig = 1;
+    return;
+  }
+
 /*
     else if (strcmp (Buffer, "tr 4.1\r\n") == 0) 
   {
@@ -265,6 +271,16 @@ void mv_straight (uint16_t ds, uint8_t reverse)
     HAL_TIM_Base_Start_IT(&htim3);
     length = sprintf(Buffer, "My predicted driving distance in mm is: %d\r\n", ds);
     HAL_UART_Transmit(&huart1, Buffer, length, 100);
+    memset(Buffer, 0, strlen(Buffer)); //clear buffer
+  }
+
+void mv_labyrinth (uint16_t ds, uint8_t reverse)
+  {
+    mv_direction_lab = reverse; //set driving direction
+    current_dis_lab = 0; //reset currently driven distance
+    dis_val_lab = ds; //Solution for Bug: VS code tends to optimize ds which ends up deleting its content
+    target_dis_lab = dis_val_lab/0.061; //set target distance
+    HAL_TIM_Base_Start_IT(&htim3);
     memset(Buffer, 0, strlen(Buffer)); //clear buffer
   }
 
@@ -349,6 +365,126 @@ void follow_wall (uint16_t ds)
           HAL_TIM_Base_Start_IT(&htim3);
           HAL_Delay(500);
         }
+
+/* REMOVED as sensors read wrong values close to a wall
+        else if (cur_dis_left < wall_len_left - 10) //len_right > wall_len_right + 10 || 
+        {
+          // right turn if left wall too close
+          turn(5, 3);//right = 3
+
+          mv_direction = 0; //resume straight drive
+          HAL_TIM_Base_Start_IT(&htim3);
+          HAL_Delay(300);
+        }*/
+      }
+}
+
+void explore_labyrinth (uint16_t ds)
+{
+      mv_straight(ds, 0);  // Set distance 2 meters , drive foreward
+
+      //  Move along wall function which enbales the mv_straight until deviation is detected or od > dist_val
+      while (current_dis < target_dis)
+      { 
+        US_Select = 0; //select front sensor
+        trig_front();
+        len_front_parking = sprintf(distance_str_parking, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
+        HAL_UART_Transmit(&huart1, distance_str_parking, len_front_parking, 100);
+        HAL_Delay(200);
+
+        // check distance to left wall
+        US_Select = 1;
+        trig_left();
+        HAL_Delay(500);
+        cur_dis_left = dist_calc(echo_duration_left);
+        len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", cur_dis_left);
+        HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100);
+
+        // check distance to right wall
+        US_Select = 2;
+        trig_right();
+        HAL_Delay(500);
+        cur_dis_right = dist_calc(echo_duration_right);
+        len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n--------- \r\n", cur_dis_right);
+        HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100);
+
+          //if (dist_calc(echo_duration_front) < 70)
+          //{
+            //front_wall_trig = 1;
+            //HAL_Delay(300); //small delay
+
+            //turn right 90°
+            //turn(90, 3);//right = 3
+
+          //}
+        
+
+        if (cur_dis_left > wall_len_left + 30 && cur_dis_left < 100)
+        {
+          // left turn if left wall too far
+          uint8_t* message2 = "follow left\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          turn(3, 2);//left = 2
+
+          mv_direction = 0; //resume straight drive
+          HAL_TIM_Base_Start_IT(&htim3);
+          HAL_Delay(500);
+        }
+
+        else if (cur_dis_right > wall_len_right + 30 && cur_dis_right < 100) 
+        {
+          // right turn if left wall too close
+          uint8_t* message2 = "follow right\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          turn(3, 3);//right = 3
+
+          mv_direction = 0; //resume straight drive
+          HAL_TIM_Base_Start_IT(&htim3);
+          HAL_Delay(500);
+        }
+
+        else if (cur_dis_right > 100) 
+        {
+          // right turn if left wall too close
+          uint8_t* message2 = "RIGHT TURN\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          while (dist_calc(echo_duration_front > 80))
+          {
+            follow_wall(110);
+          }
+          turn(90, 3);//right = 3
+          mv_direction = 0; //resume straight drive
+          follow_wall(200);
+          HAL_TIM_Base_Start_IT(&htim3);
+          target_dis = 63000;
+          HAL_Delay(500);
+        }
+        
+        else if (cur_dis_left > 100 && cur_dis_right < 100 && dist_calc(echo_duration_front < 75))
+        {
+          // left turn if left wall too far
+          uint8_t* message2 = "LEFT TURN\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          turn(90, 2);//left = 2
+          mv_direction = 0; //resume straight drive
+          follow_wall(200);
+          HAL_TIM_Base_Start_IT(&htim3);
+          target_dis = 63000;
+          HAL_Delay(500);
+        }
+
+        else if (cur_dis_left < 100 && cur_dis_right < 100 && dist_calc(echo_duration_front < 75))
+        {
+          // left turn if left wall too far
+          uint8_t* message2 = "TURN AROUND\r\n";
+          HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
+          turn(180, 3);//right = 3
+
+          mv_direction = 0; //resume straight drive
+          HAL_TIM_Base_Start_IT(&htim3);
+          HAL_Delay(500);
+        }
+
 
 /* REMOVED as sensors read wrong values close to a wall
         else if (cur_dis_left < wall_len_left - 10) //len_right > wall_len_right + 10 || 
@@ -457,7 +593,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
 //init labyrinth variables
   lab_drv_trig = 0;
-
+  maze_explore_trig = 0;
 //ADD COMMENT
   od_buf = 0;
   od = 0;
@@ -617,6 +753,12 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       follow_wall(cells * 200);
       lab_drv_trig = 0;
       current_cell = current_cell + cells;
+    }
+
+    else if (maze_explore_trig == 1) //drive to the middle of the labyrinth
+    {
+      explore_labyrinth(63000);
+      maze_explore_trig = 0;
     }
 
     else if (lab_turn_trig) // turn right and drive certain amount of cells

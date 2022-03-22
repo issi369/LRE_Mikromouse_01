@@ -66,9 +66,13 @@ uint16_t ds;
 uint16_t target_dis;
 uint16_t p;
 uint16_t sp;
+uint16_t current_dis_lab;
+uint16_t target_dis_lab;
 
 uint16_t od;
 uint16_t od_buf;
+uint16_t od_lab;
+uint16_t od_buf_lab;
 
 // send tm ds distance command trigger
 uint8_t tmds_trig;
@@ -79,6 +83,7 @@ uint8_t tmod_trig;
 //move distance command trigger
 uint8_t mvds_trig; 
 uint16_t dis_val;
+uint16_t dis_val_lab;
 
 //move speed command trigger
 uint8_t set_sp_trig;
@@ -88,6 +93,7 @@ uint8_t set_wa_trig;
 
 //move direction
 uint8_t mv_direction;
+uint8_t mv_direction_lab;
 
 //turning variables
 uint8_t r; //lre_stepper iterrator for right motor when turning
@@ -121,6 +127,7 @@ uint8_t lab_turnaround_trig;
 uint8_t lab_turnleft_trig;
 uint16_t cells;
 uint16_t current_cell;
+uint8_t maze_explore_trig;
 
 //uint8_t lab_det_trig;
 uint8_t lab_exp_trig;
