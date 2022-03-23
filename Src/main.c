@@ -105,6 +105,13 @@ uint8_t wall_str[200];
 uint8_t wall_array_show = 0;
 uint8_t cell_value_1 = 0;
 uint8_t cell_value_2 = 0;
+uint8_t cell_value_3 = 0;
+uint8_t cell_value_4 = 0;
+uint8_t cell_value_5 = 0;
+uint8_t cell_value_6 = 0;
+uint8_t cell_value_7 = 0;
+uint8_t cell_value_8 = 0;
+uint8_t cell_value_9 = 0;
 
 
 int x;
@@ -575,30 +582,48 @@ void mz_solve_1 (uint16_t solve_val)
 {
   if (solve_val = 1)
   {
-      /*wall_array[1][15]=0;
-      wall_array[2][15]=0;
-      wall_array[3][15]=0;
-      wall_array[1][14]=0;
-      wall_array[2][14]=1;
-      wall_array[3][13]=1;
-      wall_array[2][13]=1;*/
       cell_value_1 = 3;
       wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_1);
       HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
       follow_wall(190);
-      /*wall_array[1][13]=0;
-      wall_array[3][13]=1;
-      wall_array[2][12]=1;*/
       cell_value_2 = 6;
       wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_2);
       HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
       turn(88, 3);
-      follow_wall(400);
+      follow_wall(190);
+      cell_value_2 = 8;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_3);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
+      follow_wall(190);
+      cell_value_2 = 4;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_4);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
       turn(88, 2);
-      follow_wall(400);
+      follow_wall(190);
+      cell_value_2 = 2;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_5);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
+      turn(88, 3);
+      follow_wall(190);
+      cell_value_2 = 10;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_6);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
+      follow_wall(190);
+      cell_value_2 = 12;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_7);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
+      turn(88, 2);
+      follow_wall(190);
+      cell_value_2 = 12;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_8);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
+      follow_wall(190);
+      cell_value_2 = 14;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_9);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
       turn(720,3);
       solve_1_trig = 0;
-  }  
+  }
 }
 
 void mz_solve_2 (uint16_t solve_val)
