@@ -408,7 +408,7 @@ void explore_labyrinth (uint16_t ds)
         cur_dis_right = dist_calc(echo_duration_right);
         len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n--------- \r\n", cur_dis_right);
         HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100);
-        HAL_Delay(50);
+        HAL_Delay(10);
 
           //if (dist_calc(echo_duration_front) < 70)
           //{
@@ -421,24 +421,25 @@ void explore_labyrinth (uint16_t ds)
           //}
         
 
-        if (cur_dis_left > 60 && cur_dis_left < 100)
+        if ((cur_dis_left > 60 && cur_dis_left < 100) || cur_dis_right < 45)
         {
           // left turn if left wall too far
           uint8_t* message2 = "follow left\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(1, 2);//left = 2
+          turn(2, 2);//left = 2
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
-          HAL_Delay(500);
+          HAL_Delay(50);
+          
         }
 
-        else if (cur_dis_right > 60 && cur_dis_right < 100) 
+        else if ((cur_dis_right > 60 && cur_dis_right < 100) || cur_dis_left < 45) 
         {
           // right turn if left wall too close
           uint8_t* message2 = "follow right\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(1, 3);//right = 3
+          turn(2, 3);//right = 3
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
@@ -467,13 +468,13 @@ void explore_labyrinth (uint16_t ds)
           }
           else if (dist_calc(echo_duration_front) > 200)
           {
-            mv_straight(105, 0);
+            mv_straight(180, 0);
             while (current_dis < target_dis)
             {
             
             }
           
-            mv_straight(20, 1);
+            mv_straight(60, 1);
             while (current_dis < target_dis)
             {
             
@@ -485,7 +486,7 @@ void explore_labyrinth (uint16_t ds)
           follow_wall(90);
           target_dis = 63000;
           HAL_TIM_Base_Start_IT(&htim3);
-          HAL_Delay(500);
+          HAL_Delay(50);
         }
         
         else if (cur_dis_left > 100 && cur_dis_right < 100 && dist_calc(echo_duration_front) < 100)
