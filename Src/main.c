@@ -99,6 +99,14 @@ uint8_t wall_len_right = 35; // Set desired distance to right wall
 uint8_t distance_str_od[200];
 uint8_t len_od = 0;
 
+//save walls
+uint32_t wall_array[15][15];
+uint8_t wall_str[200];
+uint8_t wall_array_show = 0;
+uint8_t cell_value_1 = 0;
+uint8_t cell_value_2 = 0;
+
+
 int x;
 int y;
 
@@ -336,26 +344,26 @@ void follow_wall (uint16_t ds)
         // check distance to left wall
         US_Select = 1;
         trig_left();
-        HAL_Delay(500);
+        
         cur_dis_left = dist_calc(echo_duration_left);
         len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", cur_dis_left);
         HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100);
-
+        HAL_Delay(50);
         // check distance to right wall
         US_Select = 2;
         trig_right();
-        HAL_Delay(500);
+        
         cur_dis_right = dist_calc(echo_duration_right);
         len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n--------- \r\n", cur_dis_right);
         HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100);
-
+        HAL_Delay(50);
         if (check_for_corner == 1) // active corner-checking by enabling front-sensor trigger
         {
           US_Select = 0; //select front sensor
           trig_front();
           len_front_parking = sprintf(distance_str_parking, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
           HAL_UART_Transmit(&huart1, distance_str_parking, len_front_parking, 100);
-          HAL_Delay(200);
+          HAL_Delay(50);
           if (dist_calc(echo_duration_front) < 70)
           {
             front_wall_trig = 1;
@@ -367,28 +375,28 @@ void follow_wall (uint16_t ds)
           }
         }
 
-        if (cur_dis_left > wall_len_left + 30 && cur_dis_left < 100)
+        if ((cur_dis_left > 60 && cur_dis_left < 100) || cur_dis_right < 45)
         {
           // left turn if left wall too far
           uint8_t* message2 = "LEFT FOLLOW\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(3, 2);//left = 2
+          turn(2, 2);//left = 2
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
-          HAL_Delay(500);
+          HAL_Delay(50);
         }
 
-        else if (cur_dis_right > wall_len_right + 30 && cur_dis_right < 100) 
+        else if ((cur_dis_right > 60 && cur_dis_right < 100) || cur_dis_left < 45) 
         {
           // right turn if left wall too close
           uint8_t* message2 = "RIGHT FOLLOW\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(3, 3);//right = 3
+          turn(2, 3);//right = 3
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
-          HAL_Delay(500);
+          HAL_Delay(50);
         }
 
 /* REMOVED as sensors read wrong values close to a wall
@@ -561,25 +569,36 @@ void explore_labyrinth (uint16_t ds)
           HAL_Delay(300);
         }*/
       }
-
-
-
 }
 
 void mz_solve_1 (uint16_t solve_val)
 {
   if (solve_val = 1)
   {
+      /*wall_array[1][15]=0;
+      wall_array[2][15]=0;
+      wall_array[3][15]=0;
+      wall_array[1][14]=0;
+      wall_array[2][14]=1;
+      wall_array[3][13]=1;
+      wall_array[2][13]=1;*/
+      cell_value_1 = 3;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_1);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
       follow_wall(190);
+      /*wall_array[1][13]=0;
+      wall_array[3][13]=1;
+      wall_array[2][12]=1;*/
+      cell_value_2 = 6;
+      wall_array_show = sprintf(wall_str,"Here is the wall array %d\r\n", cell_value_2);
+      HAL_UART_Transmit(&huart1, wall_str, wall_array_show, 100);
       turn(88, 3);
       follow_wall(400);
       turn(88, 2);
       follow_wall(400);
       turn(720,3);
       solve_1_trig = 0;
-  }
-  
-  
+  }  
 }
 
 void mz_solve_2 (uint16_t solve_val)
