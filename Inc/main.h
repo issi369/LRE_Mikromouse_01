@@ -105,6 +105,12 @@ uint8_t mvright_trig;
 uint8_t in_rot; 
 uint8_t rot_norm; //transformation coef from ° to ticks
 
+//solving flags
+uint8_t solve_1_trig;
+uint8_t solve_2_trig; 
+uint8_t solve_3_trig;
+uint8_t solve_4_trig;
+
 //parking variables
 uint8_t parking_trig;
 uint8_t front_wall_trig;
@@ -115,6 +121,7 @@ uint8_t distance_str_parking[200];
 //follow wall variables
 uint16_t cur_dis_left;
 uint16_t cur_dis_right;
+uint16_t solve_val;
 
 //follow corner variables
 uint8_t corner_trig;

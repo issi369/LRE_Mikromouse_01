@@ -252,6 +252,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     return;
   }
 
+  // command for solve starting from shortest path
+  else if (strcmp (Buffer, "tr s1\r\n") == 0) 
+  {
+    solve_1_trig = 1;
+    return;
+  }
+   // command for solve starting from second shortest path
+  else if (strcmp (Buffer, "tr s2\r\n") == 0) 
+  {
+    solve_2_trig = 1;
+    return;
+  }
+   // command for solve starting from second longest path
+  else if (strcmp (Buffer, "tr s3\r\n") == 0) 
+  {
+    solve_3_trig = 1;
+    return;
+  }
+   // command for solve starting from longest path
+  else if (strcmp (Buffer, "tr s4\r\n") == 0) 
+  {
+    solve_4_trig = 1;
+    return;
+  }
+
 /*
     else if (strcmp (Buffer, "tr 4.1\r\n") == 0) 
   {
@@ -536,6 +561,159 @@ void explore_labyrinth (uint16_t ds)
           HAL_Delay(300);
         }*/
       }
+
+
+
+}
+
+void mz_solve_1 (uint16_t solve_val)
+{
+  if (solve_val = 1)
+  {
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(400);
+      turn(720,3);
+      solve_1_trig = 0;
+  }
+  
+  
+}
+
+void mz_solve_2 (uint16_t solve_val)
+{
+
+
+    if(solve_val = 2)
+    {
+      follow_wall(600);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(720,3);
+      solve_2_trig =0;
+    }
+
+ 
+  
+  
+}
+
+void mz_solve_3 (uint16_t solve_val)
+{
+ 
+
+    if (solve_val = 3)
+    {
+      follow_wall(600);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 3); 
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(400);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(720,3);
+      solve_3_trig =0;
+    }
+  
+  
+}
+
+void mz_solve_4 (uint16_t solve_val)
+{
+  if (solve_val = 4)
+    {
+      follow_wall(600);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3); 
+      follow_wall(600);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(400);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 3);
+      follow_wall(400);
+      turn(88, 2);
+      follow_wall(190);
+      turn(88, 2);
+      follow_wall(190);
+      turn(720,3);
+      solve_4_trig =0;
+    }
+  
+  
 }
 /* USER CODE END 0 */
 
@@ -600,6 +778,12 @@ int main(void)
   t_1_right = 0;
 
   US_Select = 3;
+
+//solve trigger 0
+  solve_1_trig = 0;
+  solve_2_trig = 0;
+  solve_3_trig = 0;
+  solve_4_trig = 0;
 
 //init drive straight trigger
   mvds_trig = 0;
@@ -800,10 +984,34 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
       maze_explore_trig = 0;
     }
 
+    else if (solve_1_trig == 1) //drive to the middle of the labyrinth
+    {
+      mz_solve_1(1);
+      solve_1_trig = 0;
+    }
+
+    else if (solve_2_trig == 1) //drive to the middle of the labyrinth
+    {
+      mz_solve_2(2);
+      solve_2_trig = 0;
+    }
+
+    else if (solve_3_trig == 1) //drive to the middle of the labyrinth
+    {
+      mz_solve_3(3);
+      solve_3_trig = 0;
+    }
+
+    else if (solve_4_trig == 1) //drive to the middle of the labyrinth
+    {
+      mz_solve_4(4);
+      solve_4_trig = 0;
+    }
+
     else if (lab_turn_trig) // turn right and drive certain amount of cells
     {
       cells = atoi(Text);
-      turn(90, 3);
+      turn(88, 3);
       follow_wall(cells * 200);
       lab_turn_trig = 0;
       current_cell = current_cell + cells;
@@ -811,7 +1019,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
     else if (lab_turnaround_trig) // turn around and return to the right turn position
     {
-      turn(180, 3);
+      turn(176, 3);
       follow_wall(cells * 200);
       lab_turnaround_trig = 0;
       current_cell = current_cell - cells;
@@ -819,8 +1027,9 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
     else if (lab_turnleft_trig) // turn left at the right turn position and return to the start of 4.1.1
     {
-      turn(90, 2);
-      follow_wall(current_cell * 200); // current cell is used here, since it is the distance left to the start point
+      turn(88, 2);
+      follow_wall(current_cell * 200); 
+      turn(720, 2);// current cell is used here, since it is the distance left to the start point
       lab_turnleft_trig = 0;
       current_cell = 0; // start point reached 
     }
