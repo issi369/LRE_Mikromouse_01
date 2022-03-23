@@ -384,29 +384,31 @@ void explore_labyrinth (uint16_t ds)
       mv_straight(ds, 0);  // Set distance 2 meters , drive foreward
 
       //  Move along wall function which enbales the mv_straight until deviation is detected or od > dist_val
-      while (current_dis < target_dis)
+      while (1)
       { 
         US_Select = 0; //select front sensor
         trig_front();
         len_front_parking = sprintf(distance_str_parking, "Distance front is: %02d \r\n", dist_calc(echo_duration_front));
         HAL_UART_Transmit(&huart1, distance_str_parking, len_front_parking, 100);
-        HAL_Delay(200);
+        HAL_Delay(10);
 
         // check distance to left wall
         US_Select = 1;
         trig_left();
-        HAL_Delay(500);
+        
         cur_dis_left = dist_calc(echo_duration_left);
         len_left = sprintf(distance_str_left, "Distance left is: %02d \r\n", cur_dis_left);
         HAL_UART_Transmit(&huart1, distance_str_left, len_left, 100);
+        HAL_Delay(10);
 
         // check distance to right wall
         US_Select = 2;
         trig_right();
-        HAL_Delay(500);
+        
         cur_dis_right = dist_calc(echo_duration_right);
         len_right = sprintf(distance_str_right, "Distance right is: %02d \r\n--------- \r\n", cur_dis_right);
         HAL_UART_Transmit(&huart1, distance_str_right, len_right, 100);
+        HAL_Delay(10);
 
           //if (dist_calc(echo_duration_front) < 70)
           //{
@@ -419,62 +421,102 @@ void explore_labyrinth (uint16_t ds)
           //}
         
 
-        if (cur_dis_left > wall_len_left + 30 && cur_dis_left < 100)
+        if (cur_dis_left > 75 && cur_dis_left < 100)
         {
           // left turn if left wall too far
           uint8_t* message2 = "follow left\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(3, 2);//left = 2
+          turn(2.5, 2);//left = 2
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
           HAL_Delay(500);
         }
 
-        else if (cur_dis_right > wall_len_right + 30 && cur_dis_right < 100) 
+        else if (cur_dis_right > 75 && cur_dis_right < 100) 
         {
           // right turn if left wall too close
           uint8_t* message2 = "follow right\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(3, 3);//right = 3
+          turn(2.5, 3);//right = 3
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
           HAL_Delay(500);
         }
 
-        else if (cur_dis_right > 170) 
+        else if (cur_dis_right > 170) //RIGHT TURN
         {
-          // right turn if left wall too close
+          
           uint8_t* message2 = "RIGHT TURN\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          follow_wall(80);
+          //follow_wall(90);
+          if (dist_calc(echo_duration_front) < 200)
+          { 
+            mv_straight(120, 0);
+            while (current_dis < target_dis)
+            {
+            
+            }
+          
+            mv_straight(20, 1);
+            while (current_dis < target_dis)
+            {
+            
+            }
+          }
+          else if (dist_calc(echo_duration_front) > 200)
+          {
+            mv_straight(105, 0);
+            while (current_dis < target_dis)
+            {
+            
+            }
+          
+            mv_straight(20, 1);
+            while (current_dis < target_dis)
+            {
+            
+            }
+          }
           target_dis = 63000;
-          turn(90, 3);//right = 3
+          turn(88, 3);//right = 3
           mv_direction = 0; //resume straight drive
+          follow_wall(90);
+          target_dis = 63000;
           HAL_TIM_Base_Start_IT(&htim3);
           HAL_Delay(500);
         }
         
-        else if (cur_dis_left > 100 && cur_dis_right < 100 && dist_calc(echo_duration_front < 75))
+        else if (cur_dis_left > 100 && cur_dis_right < 100 && dist_calc(echo_duration_front) < 100)
         {
-          // left turn if left wall too far
+          // LEFT TURN FOR REAL
           uint8_t* message2 = "LEFT TURN\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(90, 2);//left = 2
+          mv_straight(140, 0);
+          while (current_dis < target_dis)
+          {
+            
+          }
+          
+          mv_straight(20, 1);
+          while (current_dis < target_dis)
+          {
+            
+          }
+          turn(88, 2);//left = 2
           mv_direction = 0; //resume straight drive
-          follow_wall(200);
           HAL_TIM_Base_Start_IT(&htim3);
           target_dis = 63000;
           HAL_Delay(500);
         }
 
-        else if (cur_dis_left < 100 && cur_dis_right < 100 && dist_calc(echo_duration_front < 75))
+        else if (cur_dis_left < 100 && cur_dis_right < 100 && dist_calc(echo_duration_front) < 90)
         {
           // left turn if left wall too far
           uint8_t* message2 = "TURN AROUND\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          turn(180, 3);//right = 3
+          turn(176, 3);//right = 3
 
           mv_direction = 0; //resume straight drive
           HAL_TIM_Base_Start_IT(&htim3);
@@ -569,7 +611,7 @@ int main(void)
   tmod_trig = 0;
 
 //set default speed
-  sp = 35;
+  sp = 55;
   p = 62500/sp; //update speed variable
 __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1); //update tim3 prescaler
 __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
@@ -579,7 +621,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
 //set default turning radius
   rotation = 0; //default turn: corresponds to 90° turn
-  rot_norm = 16.4;
+  rot_norm = 16.2;
   mvleft_trig = 0;
   mvright_trig = 0;
 
