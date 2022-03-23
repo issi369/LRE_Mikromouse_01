@@ -443,20 +443,16 @@ void explore_labyrinth (uint16_t ds)
           HAL_Delay(500);
         }
 
-        else if (cur_dis_right > 100) 
+        else if (cur_dis_right > 170) 
         {
           // right turn if left wall too close
           uint8_t* message2 = "RIGHT TURN\r\n";
           HAL_UART_Transmit(&huart1, message2, strlen(message2),100);
-          while (dist_calc(echo_duration_front > 80))
-          {
-            follow_wall(110);
-          }
+          follow_wall(80);
+          target_dis = 63000;
           turn(90, 3);//right = 3
           mv_direction = 0; //resume straight drive
-          follow_wall(200);
           HAL_TIM_Base_Start_IT(&htim3);
-          target_dis = 63000;
           HAL_Delay(500);
         }
         
@@ -573,7 +569,7 @@ int main(void)
   tmod_trig = 0;
 
 //set default speed
-  sp = 55;
+  sp = 35;
   p = 62500/sp; //update speed variable
 __HAL_TIM_SET_PRESCALER(&htim3, SystemCoreClock / 1000000-1); //update tim3 prescaler
 __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
@@ -583,7 +579,7 @@ __HAL_TIM_SET_AUTORELOAD(&htim3, p - 1);
 
 //set default turning radius
   rotation = 0; //default turn: corresponds to 90° turn
-  rot_norm = 16.2;
+  rot_norm = 16.4;
   mvleft_trig = 0;
   mvright_trig = 0;
 
